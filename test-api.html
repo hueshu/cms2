@@ -55,6 +55,9 @@
             <label>API URL: </label>
             <input type="text" id="apiUrl" value="https://cf-cms-worker.hueshu.workers.dev" />
             <br>
+            <button onclick="setUrl('https://cf-cms-worker.hueshu.workers.dev')">使用Workers URL</button>
+            <button onclick="setUrl('https://cmsceshi.xiniujianji.com')">使用自定义域名</button>
+            <br>
             <label>API Key: </label>
             <input type="text" id="apiKey" value="test-api-key-2024" />
         </div>
@@ -76,6 +79,10 @@
     </div>
 
     <script>
+        const setUrl = (url) => {
+            document.getElementById('apiUrl').value = url;
+        };
+
         const getConfig = () => ({
             apiUrl: document.getElementById('apiUrl').value,
             apiKey: document.getElementById('apiKey').value
