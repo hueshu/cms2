@@ -4,7 +4,7 @@ status: backlog
 created: 2025-09-19T05:53:25Z
 progress: 0%
 prd: .claude/pm/prds/multi-site-cms.md
-github: [Will be updated when synced to GitHub]
+github: https://github.com/hueshu/cms2/issues/1
 ---
 
 # Epic: 多站点CMS系统
@@ -170,16 +170,16 @@ github: [Will be updated when synced to GitHub]
 3. **自动化部署**：GitHub Actions集成，推送即部署
 
 ## Tasks Created
-- [ ] 001.md - 项目初始化与基础架构 (parallel: false)
-- [ ] 002.md - 数据库设计与初始化 (parallel: true)
-- [ ] 003.md - 核心API框架 (parallel: true)
-- [ ] 004.md - 站点管理功能 (parallel: true)
-- [ ] 005.md - 内容管理系统 (parallel: true)
-- [ ] 006.md - 模板与页面生成 (parallel: false)
-- [ ] 007.md - SEO优化套件 (parallel: true)
-- [ ] 008.md - 图片生成服务 (parallel: true)
-- [ ] 009.md - 性能优化 (parallel: false)
-- [ ] 010.md - 测试与文档 (parallel: false)
+- [ ] #4 - 项目初始化与基础架构 (parallel: false)
+- [ ] #7 - 数据库设计与初始化 (parallel: true)
+- [ ] #9 - 核心API框架 (parallel: true)
+- [ ] #10 - 站点管理功能 (parallel: true)
+- [ ] #11 - 内容管理系统 (parallel: true)
+- [ ] #2 - 模板与页面生成 (parallel: false)
+- [ ] #3 - SEO优化套件 (parallel: true)
+- [ ] #5 - 图片生成服务 (parallel: true)
+- [ ] #6 - 性能优化 (parallel: false)
+- [ ] #8 - 测试与文档 (parallel: false)
 
 Total tasks: 10
 Parallel tasks: 6
