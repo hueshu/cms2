@@ -9,6 +9,7 @@ import { errorHandler, notFoundHandler } from './middleware/error'
 import { ipRateLimiter, rateLimitMiddleware } from './middleware/rateLimit'
 import { authMiddleware, apiKeyMiddleware, optionalAuthMiddleware } from './middleware/auth'
 import { tenantMiddleware, optionalTenantMiddleware } from './middleware/tenant'
+import { domainMiddleware, getCurrentDomain, getCurrentSite, isSiteNotFound, isDefaultDomain } from './middleware/domain'
 import {
   cacheMiddleware,
   apiCacheMiddleware,
@@ -25,6 +26,9 @@ import { imagesRoutes } from './api/images'
 import { domainsRoutes } from './api/domains'
 import { cdnRoutes } from './api/cdn'
 import { seoRoutes } from './api/seo'
+import { publicRoutes } from './api/public'
+import { staticRoutes } from './api/static'
+import { unifiedFrontendRoutes } from './api/unified-frontend'
 
 // Import utilities
 import { successResponse } from './utils/response'
@@ -52,24 +56,92 @@ app.use('*', cors({
   credentials: true
 }))
 
-app.use('*', compress())
+// Temporarily disable compression to fix encoding issues with reverse proxy
+// app.use('*', compress())
 app.use('*', secureHeaders())
 app.use('*', logger())
 app.use('*', ipRateLimiter)
+
+// Domain identification middleware - run before other middleware
+app.use('*', domainMiddleware)
+
+// Static assets
+app.route('/', staticRoutes)
+
+// Frontend routes for specific sites (must be before API routes)
+app.route('/', unifiedFrontendRoutes)
 
 // Error handling
 app.onError(errorHandler)
 app.notFound(notFoundHandler)
 
-// Health check endpoints
-app.get('/', (c) => {
+// Debug endpoint to check domain detection
+app.get('/debug/domain', (c) => {
+  const requestHost = c.req.header('host') || new URL(c.req.url).hostname
+  const domain = requestHost.split(':')[0]
+  const site = getCurrentSite(c)
+
   return successResponse(c, {
-    status: 'ok',
-    service: 'cf-cms-worker',
-    environment: c.env.ENVIRONMENT,
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    headers: {
+      host: c.req.header('host'),
+      xForwardedHost: c.req.header('x-forwarded-host'),
+      xForwardedFor: c.req.header('x-forwarded-for'),
+      cfConnectingIp: c.req.header('cf-connecting-ip')
+    },
+    url: c.req.url,
+    hostname: new URL(c.req.url).hostname,
+    extractedDomain: domain,
+    currentDomain: getCurrentDomain(c),
+    siteFound: !!site,
+    site: site ? { id: site.id, name: site.name, domain: site.domain } : null,
+    isDefaultDomain: isDefaultDomain(c),
+    isSiteNotFound: isSiteNotFound(c)
   })
+})
+
+// Root endpoint - show JSON for API-only domains
+app.get('/api', (c) => {
+  const domain = getCurrentDomain(c)
+  const site = getCurrentSite(c)
+
+  if (site) {
+    // If we found a site for this domain, show site info
+    return successResponse(c, {
+      status: 'ok',
+      message: `Welcome to ${site.name}`,
+      site: {
+        id: site.id,
+        name: site.name,
+        domain: site.domain,
+        description: site.description
+      },
+      api: {
+        docs: '/api/v1/docs',
+        health: '/api/v1/health'
+      }
+    })
+  } else if (isSiteNotFound(c)) {
+    // If domain doesn't match any site
+    return c.json({
+      success: false,
+      error: {
+        code: 'SITE_NOT_CONFIGURED',
+        message: `No site configured for domain: ${domain}`,
+        help: 'Please configure this domain in the CMS admin panel'
+      }
+    }, 404)
+  } else {
+    // Default Workers domain or localhost
+    return successResponse(c, {
+      status: 'ok',
+      service: 'cf-cms-worker',
+      environment: c.env.ENVIRONMENT,
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      domain: domain,
+      note: 'This is the default Workers endpoint. Configure custom domains for multi-site support.'
+    })
+  }
 })
 
 app.get('/api/health', (c) => {
@@ -138,6 +210,12 @@ api.route('/cdn', cdnRoutes)
 // SEO management routes with API key auth
 api.use('/seo/*', apiKeyMiddleware)
 api.route('/seo', seoRoutes)
+
+// Public API routes - domain-based content (no auth required)
+// These routes work based on the domain being accessed
+const publicApi = app.basePath('/api/public')
+publicApi.use('*', pageCacheMiddleware({ ttl: 600 })) // 10 minutes cache for public content
+publicApi.route('/', publicRoutes)
 
 export default {
   fetch: app.fetch,

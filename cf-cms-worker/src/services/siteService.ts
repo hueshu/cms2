@@ -239,4 +239,136 @@ export class SiteService {
       return false
     }
   }
+
+  // Get site by domain (now supports multiple domains via domain_mappings table)
+  async getSiteByDomain(domain: string): Promise<Site> {
+    const cached = await this.kv.get<Site>(`site:domain:${domain}`)
+    if (cached) return cached
+
+    // First check domain_mappings table if it exists
+    try {
+      const mapping = await this.db.executeOne<{ site_id: string }>(
+        'SELECT site_id FROM domain_mappings WHERE domain = ?',
+        [domain]
+      )
+
+      if (mapping) {
+        // Get site by mapped site_id
+        const site = await this.db.executeOne<Site>(
+          'SELECT * FROM sites WHERE id = ? AND status = ?',
+          [mapping.site_id, 'active']
+        )
+
+        if (site) {
+          // Parse JSON config if it's a string
+          if (typeof site.config === 'string') {
+            try {
+              site.config = JSON.parse(site.config)
+            } catch (e) {
+              site.config = {}
+            }
+          }
+
+          // Cache for 5 minutes (300 seconds)
+          await this.kv.set(`site:domain:${domain}`, site, { expirationTtl: 300 })
+          return site
+        }
+      }
+    } catch (error) {
+      // domain_mappings table might not exist yet, continue with fallback
+      console.log('Error querying domain_mappings:', error)
+    }
+
+    // Fallback: check sites table domain field (for backward compatibility)
+    const site = await this.db.executeOne<Site>(
+      'SELECT * FROM sites WHERE domain = ? AND status = ?',
+      [domain, 'active']
+    )
+
+    if (!site) {
+      throw notFoundError('Site', 'domain', domain)
+    }
+
+    // Parse JSON config if it's a string
+    if (typeof site.config === 'string') {
+      try {
+        site.config = JSON.parse(site.config)
+      } catch (e) {
+        site.config = {}
+      }
+    }
+
+    // Cache for 5 minutes
+    await this.kv.set(`site:domain:${domain}`, site, { expirationTtl: 300 })
+    return site
+  }
+
+  // Add domain mapping for a site
+  async addDomainMapping(siteId: string, domain: string, isPrimary: boolean = false): Promise<void> {
+    try {
+      // Check if domain already exists
+      const existing = await this.db.executeOne<any>(
+        'SELECT * FROM domain_mappings WHERE domain = ?',
+        [domain]
+      )
+
+      if (existing) {
+        throw conflictError('Domain mapping', 'domain', domain)
+      }
+
+      // If setting as primary, unset other primary domains for this site
+      if (isPrimary) {
+        await this.db.executeRun(
+          'UPDATE domain_mappings SET is_primary = FALSE WHERE site_id = ?',
+          [siteId]
+        )
+      }
+
+      // Add new domain mapping
+      await this.db.executeRun(
+        `INSERT INTO domain_mappings (id, site_id, domain, is_primary, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          this.db.generateId(),
+          siteId,
+          domain,
+          isPrimary,
+          new Date().toISOString()
+        ]
+      )
+
+      // Clear cache for the domain
+      await this.kv.delete(`site:domain:${domain}`)
+    } catch (error) {
+      throw databaseError('Failed to add domain mapping', error)
+    }
+  }
+
+  // Get all domains for a site
+  async getSiteDomains(siteId: string): Promise<Array<{ domain: string; is_primary: boolean }>> {
+    try {
+      const domains = await this.db.execute<{ domain: string; is_primary: boolean }>(
+        'SELECT domain, is_primary FROM domain_mappings WHERE site_id = ? ORDER BY is_primary DESC, domain ASC',
+        [siteId]
+      )
+      return domains
+    } catch (error) {
+      throw databaseError('Failed to get site domains', error)
+    }
+  }
+
+  // Remove domain mapping
+  async removeDomainMapping(domain: string): Promise<void> {
+    try {
+      await this.db.executeRun(
+        'DELETE FROM domain_mappings WHERE domain = ?',
+        [domain]
+      )
+
+      // Clear cache
+      await this.kv.delete(`site:domain:${domain}`)
+    } catch (error) {
+      throw databaseError('Failed to remove domain mapping', error)
+    }
+  }
 }
