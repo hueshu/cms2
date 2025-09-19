@@ -1,17 +1,14 @@
-# Claude Code PM
+# Multi-Site CMS 多站点内容管理系统
 
-[![Automaze](https://img.shields.io/badge/By-automaze.io-4b3baf)](https://automaze.io)
-&nbsp;
-[![Claude Code](https://img.shields.io/badge/+-Claude%20Code-d97757)](https://github.com/automazeio/ccpm/blob/main/README.md)
-[![GitHub Issues](https://img.shields.io/badge/+-GitHub%20Issues-1f2328)](https://github.com/automazeio/ccpm)
-&nbsp;
-[![MIT License](https://img.shields.io/badge/License-MIT-28a745)](https://github.com/automazeio/ccpm/blob/main/LICENSE)
-&nbsp;
-[![Follow on 𝕏](https://img.shields.io/badge/𝕏-@aroussi-1c9bf0)](http://x.com/intent/follow?screen_name=aroussi)
-&nbsp;
-[![Star this repo](https://img.shields.io/badge/★-Star%20this%20repo-e7b10b)](https://github.com/automazeio/ccpm)
+基于Cloudflare全家桶构建的多站点CMS系统，支持管理数十个独立网站，提供SEO优化、内容管理和自动化发布功能。
 
-### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, GitHub issues, Git worktrees, and mutiple AI agents running in parallel.
+## 🚀 特性
+
+- **多站点管理** - 一套系统管理多个独立网站
+- **SEO优化** - 内置完整SEO解决方案
+- **API驱动** - 纯API架构，支持自动化集成
+- **边缘计算** - 基于Cloudflare Workers，全球加速
+- **低成本运营** - 利用Cloudflare免费/低成本服务
 
 Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into GitHub issues, and issues into production code – with full traceability at every step.
 

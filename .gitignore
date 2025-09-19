@@ -1,2 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+build/
+
+# Environment variables
+.env
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+
+# Cloudflare
+.wrangler/
+.dev.vars
+wrangler-*.log
+
+# Database
+*.db
+*.sqlite
+
+# Cache
+.cache/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Project specific
 CLAUDE.md
+.claude/epics/
+.claude/context/
+
+# Logs
+*.log
+logs/
