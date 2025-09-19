@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CF-CMS API测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0052a3; }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error { color: red; }
+        .success { color: green; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 CF-CMS API 测试面板</h1>
+
+        <div>
+            <h2>配置</h2>
+            <label>API URL: </label>
+            <input type="text" id="apiUrl" value="https://cf-cms-worker.hueshu.workers.dev" />
+            <br>
+            <label>API Key: </label>
+            <input type="text" id="apiKey" value="test-api-key-2024" />
+        </div>
+
+        <div>
+            <h2>测试端点</h2>
+            <button onclick="testHealth()">健康检查</button>
+            <button onclick="getSites()">获取站点列表</button>
+            <button onclick="getSiteDetails()">获取站点详情</button>
+            <button onclick="getArticles()">获取文章列表</button>
+            <button onclick="getTags()">获取标签列表</button>
+            <button onclick="createArticle()">创建新文章</button>
+        </div>
+
+        <div>
+            <h3>响应结果：</h3>
+            <pre id="result">点击按钮开始测试...</pre>
+        </div>
+    </div>
+
+    <script>
+        const getConfig = () => ({
+            apiUrl: document.getElementById('apiUrl').value,
+            apiKey: document.getElementById('apiKey').value
+        });
+
+        const showResult = (data, isError = false) => {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = JSON.stringify(data, null, 2);
+            resultEl.className = isError ? 'error' : 'success';
+        };
+
+        async function testHealth() {
+            const { apiUrl } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/health`);
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function getSites() {
+            const { apiUrl, apiKey } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/sites`, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function getSiteDetails() {
+            const { apiUrl, apiKey } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/sites/site-001`, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function getArticles() {
+            const { apiUrl, apiKey } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/articles/site-001`, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function getTags() {
+            const { apiUrl, apiKey } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/tags/site-001`, {
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function createArticle() {
+            const { apiUrl, apiKey } = getConfig();
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/articles/site-001`, {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: '测试文章 ' + new Date().toLocaleString(),
+                        content: '这是一篇测试文章的内容。\n\n## 特性\n\n- 支持Markdown\n- 自动生成slug\n- SEO优化',
+                        status: 'draft',
+                        tags: ['测试', 'Demo']
+                    })
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>

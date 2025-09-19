@@ -139,4 +139,9 @@ api.route('/cdn', cdnRoutes)
 api.use('/seo/*', apiKeyMiddleware)
 api.route('/seo', seoRoutes)
 
-export default app
+export default {
+  fetch: app.fetch,
+  queue: async (batch: any, env: any) => {
+    // Empty queue handler - not used in this app
+  }
+}

@@ -16,7 +16,7 @@ export function successResponse<T>(
     }
   }
 
-  return c.json(response, statusCode)
+  return c.json(response, statusCode as any)
 }
 
 // Error response helper
@@ -40,7 +40,7 @@ export function errorResponse(
     }
   }
 
-  return c.json(response, statusCode)
+  return c.json(response, statusCode as any)
 }
 
 // Paginated response helper
@@ -71,7 +71,7 @@ export function paginatedResponse<T>(
     }
   }
 
-  return c.json(response, statusCode)
+  return c.json(response, statusCode as any)
 }
 
 // No content response

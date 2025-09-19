@@ -9,7 +9,7 @@ import { TagService } from '../services/tagService'
 import { successResponse, errorResponse } from '../utils/response'
 import { rateLimitMiddleware } from '../middleware/rateLimit'
 import { tenantMiddleware } from '../middleware/tenant'
-import { validationMiddleware } from '../middleware/validation'
+import { validateBody } from '../middleware/validation'
 import {
   CreateSEOConfigInput,
   UpdateSEOConfigInput,
@@ -49,7 +49,7 @@ seoRoutes.get('/:siteId/config', tenantMiddleware, async (c) => {
 })
 
 // Create SEO configuration
-seoRoutes.post('/:siteId/config', tenantMiddleware, validationMiddleware, async (c) => {
+seoRoutes.post('/:siteId/config', tenantMiddleware, async (c) => {
   try {
     const siteId = c.req.param('siteId')
     const input: CreateSEOConfigInput = await c.req.json()
@@ -67,7 +67,7 @@ seoRoutes.post('/:siteId/config', tenantMiddleware, validationMiddleware, async 
 })
 
 // Update SEO configuration
-seoRoutes.put('/:siteId/config', tenantMiddleware, validationMiddleware, async (c) => {
+seoRoutes.put('/:siteId/config', tenantMiddleware, async (c) => {
   try {
     const siteId = c.req.param('siteId')
     const input: UpdateSEOConfigInput = await c.req.json()
@@ -117,7 +117,7 @@ seoRoutes.get('/:siteId/redirects', tenantMiddleware, async (c) => {
 })
 
 // Create redirect rule
-seoRoutes.post('/:siteId/redirects', tenantMiddleware, validationMiddleware, async (c) => {
+seoRoutes.post('/:siteId/redirects', tenantMiddleware, async (c) => {
   try {
     const siteId = c.req.param('siteId')
     const input: CreateRedirectRuleInput = await c.req.json()
@@ -135,7 +135,7 @@ seoRoutes.post('/:siteId/redirects', tenantMiddleware, validationMiddleware, asy
 })
 
 // Update redirect rule
-seoRoutes.put('/:siteId/redirects/:ruleId', tenantMiddleware, validationMiddleware, async (c) => {
+seoRoutes.put('/:siteId/redirects/:ruleId', tenantMiddleware, async (c) => {
   try {
     const ruleId = c.req.param('ruleId')
     const input: UpdateRedirectRuleInput = await c.req.json()

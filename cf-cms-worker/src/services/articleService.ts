@@ -1,5 +1,5 @@
 import { DatabaseService, KVService } from '../utils/database'
-import { CacheService, cached } from './cacheService'
+import { CacheService } from './cacheService'
 import { PerformanceService } from './performanceService'
 import { QueryOptimizer } from '../utils/queryOptimizer'
 import {
@@ -152,12 +152,12 @@ export class ArticleService {
   }
 
   // Get article by ID
-  @cached({
-    ttl: 3600,
-    keyGenerator: (articleId: string, siteId?: string) =>
-      `article:${articleId}${siteId ? `:${siteId}` : ''}`
-  })
-  @PerformanceService.monitor('article.getById')
+  // @cached({
+  //   ttl: 3600,
+  //   keyGenerator: (articleId: string, siteId?: string) =>
+  //     `article:${articleId}${siteId ? `:${siteId}` : ''}`
+  // })
+  // @PerformanceService.monitor('article.getById')
   async getArticleById(articleId: string, siteId?: string): Promise<Article> {
     // Try cache first
     const cached = await this.kv.get<Article>(
@@ -214,7 +214,7 @@ export class ArticleService {
   }
 
   // Search articles with filters
-  @PerformanceService.monitor('article.search')
+  // @PerformanceService.monitor('article.search')
   async searchArticles(siteId: string, params: ArticleSearchParams): Promise<PaginatedResponse<Article>> {
     const {
       page = 1,

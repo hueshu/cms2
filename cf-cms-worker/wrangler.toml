@@ -1,7 +1,7 @@
 name = "cf-cms-worker"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
-node_compat = true
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ENVIRONMENT = "development"
@@ -10,13 +10,16 @@ ENVIRONMENT = "development"
 
 [[kv_namespaces]]
 binding = "CACHE_KV"
-id = "your-kv-namespace-id"
-preview_id = "your-kv-preview-id"
+id = "b932bf4a2ca54a86bab11ab4c01e3162"
+
+[[kv_namespaces]]
+binding = "CONFIG_KV"
+id = "eb19192119174b29b9b0ce4892673124"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "cms-database"
-database_id = "your-database-id"
+database_id = "1bda5adc-168b-49c8-a8ce-4cc751616d60"
 
 [env.production]
 vars = { ENVIRONMENT = "production" }

@@ -255,7 +255,7 @@ describe('Domains API', () => {
           ssl_certificate: {
             valid: true,
             expires_at: '2024-12-31T23:59:59Z',
-            issuer: 'Let\\'s Encrypt'
+            issuer: "Let's Encrypt"
           }
         }
       }
