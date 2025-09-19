@@ -1,0 +1,982 @@
+{{! 文章归档小工具模板 }}
+
+<div class="sidebar-widget archive-widget" data-widget-id="archive">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-archive" aria-hidden="true"></i>
+            {{widget.title}}
+        </h3>
+        {{#if widget.settings.showToggle}}
+        <button type="button"
+                class="widget-toggle-btn"
+                aria-label="展开/收起归档列表"
+                aria-expanded="true"
+                data-target="archive-list">
+            <i class="fas fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="widget-content" id="archive-list">
+        {{#if widget.data.archives}}
+
+        {{#if widget.settings.showTimeline}}
+        <div class="archive-timeline">
+            {{#each widget.data.archives}}
+            <div class="timeline-item {{#if @first}}active{{/if}}" data-period="{{this.year}}-{{this.month}}">
+                <div class="timeline-marker">
+                    <div class="timeline-dot"></div>
+                    {{#unless @last}}
+                    <div class="timeline-line"></div>
+                    {{/unless}}
+                </div>
+
+                <div class="timeline-content">
+                    <a href="{{this.url}}" class="archive-link">
+                        <div class="archive-period">
+                            <span class="archive-year">{{this.year}}</span>
+                            {{#if this.month}}
+                            <span class="archive-month">{{this.displayName}}</span>
+                            {{/if}}
+                        </div>
+                        {{#if ../widget.data.showCount}}
+                        <span class="archive-count">{{this.count}} 篇</span>
+                        {{/if}}
+                    </a>
+
+                    {{#if this.recentArticles}}
+                    <div class="archive-preview" style="display: none;">
+                        <ul class="preview-list">
+                            {{#each this.recentArticles}}
+                            <li class="preview-item">
+                                <a href="/articles/{{this.slug}}" class="preview-link">
+                                    {{truncate this.title 30}}
+                                </a>
+                                <time class="preview-date">{{formatDate this.published_at 'MM-DD'}}</time>
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        {{else}}
+
+        <ul class="archive-list {{widget.data.groupBy}}" role="list">
+            {{#each widget.data.archives}}
+            <li class="archive-item" role="listitem">
+                <a href="{{this.url}}"
+                   class="archive-link"
+                   title="查看 {{this.displayName}} 的文章"
+                   tabindex="0">
+                    <div class="archive-info">
+                        <span class="archive-period">{{this.displayName}}</span>
+                        {{#if ../widget.data.showCount}}
+                        <span class="archive-count">({{this.count}})</span>
+                        {{/if}}
+                    </div>
+
+                    {{#if ../widget.settings.showProgress}}
+                    <div class="archive-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{multiply this.count 2}}%;"></div>
+                        </div>
+                    </div>
+                    {{/if}}
+                </a>
+
+                {{#if this.children}}
+                <ul class="sub-archive-list">
+                    {{#each this.children}}
+                    <li class="sub-archive-item">
+                        <a href="{{this.url}}" class="sub-archive-link">
+                            <span class="sub-archive-period">{{this.displayName}}</span>
+                            {{#if ../../widget.data.showCount}}
+                            <span class="sub-archive-count">({{this.count}})</span>
+                            {{/if}}
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+                {{/if}}
+            </li>
+            {{/each}}
+        </ul>
+
+        {{/if}}
+
+        {{#if widget.settings.showStats}}
+        <div class="archive-stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.totalPeriods}}</span>
+                    <span class="stat-label">时间段</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{sum widget.data.archives 'count'}}</span>
+                    <span class="stat-label">总文章</span>
+                </div>
+                {{#if widget.data.archives.0}}
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.archives.0.count}}</span>
+                    <span class="stat-label">最新月份</span>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showViewAll}}
+        <div class="widget-footer">
+            <a href="/archives"
+               class="view-all-link"
+               title="查看完整归档">
+                查看完整归档
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+        {{/if}}
+
+        {{else}}
+        <div class="widget-empty">
+            <i class="far fa-calendar-alt empty-icon" aria-hidden="true"></i>
+            <p class="empty-text">暂无归档</p>
+            <a href="/write" class="empty-action">开始写作</a>
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if widget.settings.showRefresh}}
+    <div class="widget-actions">
+        <button type="button"
+                class="widget-refresh-btn"
+                data-widget="archive"
+                title="刷新归档"
+                aria-label="刷新归档列表">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{/if}}
+</div>
+
+{{! 加载状态模板 }}
+<template id="archive-loading">
+    <div class="sidebar-widget archive-widget loading">
+        <div class="widget-header">
+            <h3 class="widget-title">
+                <i class="widget-icon fas fa-archive" aria-hidden="true"></i>
+                文章归档
+            </h3>
+        </div>
+        <div class="widget-content">
+            <div class="loading-skeleton">
+                {{#repeat 8}}
+                <div class="skeleton-item">
+                    <div class="skeleton-period"></div>
+                    <div class="skeleton-count"></div>
+                </div>
+                {{/repeat}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+/* 文章归档小工具样式 */
+.archive-widget {
+    --primary-color: #3b82f6;
+    --secondary-color: #6b7280;
+    --text-color: #374151;
+    --border-color: #e5e7eb;
+    --bg-hover: #f9fafb;
+    --meta-color: #6b7280;
+    --timeline-color: #d1d5db;
+    --success-color: #10b981;
+}
+
+.archive-widget .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.archive-widget .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.archive-widget .widget-icon {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.widget-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.widget-toggle-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-hover);
+}
+
+.widget-toggle-btn i {
+    transition: transform 0.2s ease;
+}
+
+.widget-toggle-btn[aria-expanded="false"] i {
+    transform: rotate(180deg);
+}
+
+/* 标准列表样式 */
+.archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.archive-item {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.archive-item:last-child {
+    border-bottom: none;
+}
+
+.archive-item:hover {
+    background-color: var(--bg-hover);
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.archive-link {
+    display: block;
+    padding: 0.75rem 0;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.archive-link:hover {
+    color: var(--primary-color);
+}
+
+.archive-link:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+.archive-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.archive-period {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.archive-count {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+.archive-progress {
+    margin-top: 0.5rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background-color: #f3f4f6;
+    border-radius: 1.5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 1.5px;
+    transition: width 0.3s ease;
+}
+
+.sub-archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 1rem;
+    border-left: 2px solid var(--border-color);
+}
+
+.sub-archive-item {
+    padding-left: 1rem;
+    position: relative;
+}
+
+.sub-archive-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0.6rem;
+    width: 8px;
+    height: 8px;
+    background-color: var(--timeline-color);
+    border-radius: 50%;
+}
+
+.sub-archive-link {
+    display: block;
+    padding: 0.375rem 0;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
+}
+
+.sub-archive-link:hover {
+    color: var(--primary-color);
+}
+
+.sub-archive-period {
+    font-weight: 400;
+}
+
+.sub-archive-count {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* 时间线样式 */
+.archive-timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+    position: relative;
+    flex-shrink: 0;
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--timeline-color);
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--timeline-color);
+    z-index: 2;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.timeline-item.active .timeline-dot,
+.timeline-item:hover .timeline-dot {
+    background-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+    transform: scale(1.2);
+}
+
+.timeline-line {
+    flex: 1;
+    width: 2px;
+    background-color: var(--timeline-color);
+    margin-top: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.timeline-item.active .timeline-line,
+.timeline-item:hover .timeline-line {
+    background-color: var(--primary-color);
+}
+
+.timeline-content {
+    flex: 1;
+    padding-top: -0.25rem;
+}
+
+.timeline-content .archive-link {
+    padding: 0;
+    display: block;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.timeline-content .archive-link:hover {
+    color: var(--primary-color);
+    transform: translateX(0.25rem);
+}
+
+.timeline-content .archive-period {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.archive-year {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.archive-month {
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.timeline-content .archive-count {
+    margin-left: auto;
+    font-size: 0.8rem;
+}
+
+.archive-preview {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    font-size: 0.8rem;
+}
+
+.preview-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.preview-link:hover {
+    color: var(--primary-color);
+}
+
+.preview-date {
+    color: var(--meta-color);
+    font-size: 0.75rem;
+}
+
+/* 统计信息样式 */
+.archive-stats {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    margin-top: 0.25rem;
+}
+
+.widget-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.view-all-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+    background-color: #eff6ff;
+    transform: translateX(0.25rem);
+}
+
+.widget-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--meta-color);
+}
+
+.empty-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.empty-action {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.empty-action:hover {
+    background-color: #2563eb;
+}
+
+.widget-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.widget-refresh-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--meta-color);
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-refresh-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.widget-refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* 加载状态样式 */
+.loading-skeleton .skeleton-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.skeleton-period {
+    width: 60%;
+    height: 1rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+.skeleton-count {
+    width: 25%;
+    height: 0.8rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 年份归档特殊样式 */
+.archive-list.year .archive-period {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.archive-list.year .archive-count {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .timeline-item {
+        gap: 0.75rem;
+    }
+
+    .timeline-content .archive-period {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .archive-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .archive-widget {
+        --text-color: #f3f4f6;
+        --border-color: #374151;
+        --bg-hover: #1f2937;
+        --meta-color: #9ca3af;
+        --timeline-color: #4b5563;
+    }
+
+    .archive-count {
+        background-color: #374151;
+        color: #9ca3af;
+    }
+
+    .progress-bar {
+        background-color: #374151;
+    }
+
+    .widget-refresh-btn {
+        border-color: #374151;
+    }
+
+    .timeline-dot {
+        border-color: #1f2937;
+        box-shadow: 0 0 0 2px var(--timeline-color);
+    }
+}
+
+/* 无障碍访问增强 */
+@media (prefers-reduced-motion: reduce) {
+    .archive-link,
+    .timeline-content .archive-link,
+    .view-all-link,
+    .widget-refresh-btn,
+    .timeline-dot,
+    .timeline-line,
+    .progress-fill {
+        transition: none;
+    }
+
+    .skeleton-period,
+    .skeleton-count {
+        animation: none;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .widget-actions,
+    .widget-toggle-btn,
+    .timeline-dot {
+        display: none;
+    }
+
+    .archive-widget {
+        break-inside: avoid;
+    }
+
+    .timeline-line {
+        background-color: #000;
+    }
+}
+</style>
+
+<script>
+// 归档小工具交互功能
+(function() {
+    'use strict';
+
+    // 折叠/展开功能
+    function initToggleFunction() {
+        const toggleBtn = document.querySelector('.widget-toggle-btn');
+        const targetId = toggleBtn?.getAttribute('data-target');
+        const targetElement = targetId ? document.getElementById(targetId) : null;
+
+        if (!toggleBtn || !targetElement) return;
+
+        toggleBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+
+            this.setAttribute('aria-expanded', newState.toString());
+
+            if (newState) {
+                targetElement.style.display = 'block';
+                // 添加展开动画
+                targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+            } else {
+                targetElement.style.maxHeight = '0';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 300);
+            }
+
+            // 保存状态到本地存储
+            localStorage.setItem('archive-widget-expanded', newState.toString());
+        });
+
+        // 恢复之前的状态
+        const savedState = localStorage.getItem('archive-widget-expanded');
+        if (savedState === 'false') {
+            toggleBtn.click();
+        }
+    }
+
+    // 时间线交互
+    function initTimelineInteraction() {
+        const timelineItems = document.querySelectorAll('.timeline-item');
+
+        timelineItems.forEach(item => {
+            const archiveLink = item.querySelector('.archive-link');
+            const preview = item.querySelector('.archive-preview');
+
+            if (!archiveLink) return;
+
+            // 鼠标悬停显示预览
+            if (preview) {
+                let hoverTimer;
+
+                archiveLink.addEventListener('mouseenter', function() {
+                    hoverTimer = setTimeout(() => {
+                        preview.style.display = 'block';
+                        preview.style.opacity = '0';
+                        preview.style.transform = 'translateY(10px)';
+
+                        // 淡入动画
+                        requestAnimationFrame(() => {
+                            preview.style.transition = 'all 0.2s ease';
+                            preview.style.opacity = '1';
+                            preview.style.transform = 'translateY(0)';
+                        });
+                    }, 500);
+                });
+
+                archiveLink.addEventListener('mouseleave', function() {
+                    clearTimeout(hoverTimer);
+
+                    if (preview.style.display === 'block') {
+                        preview.style.opacity = '0';
+                        preview.style.transform = 'translateY(10px)';
+
+                        setTimeout(() => {
+                            preview.style.display = 'none';
+                        }, 200);
+                    }
+                });
+            }
+
+            // 点击激活状态
+            archiveLink.addEventListener('click', function(e) {
+                // 移除其他激活状态
+                timelineItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                });
+
+                // 添加激活状态
+                item.classList.add('active');
+
+                // 记录点击统计
+                if (typeof gtag !== 'undefined') {
+                    const period = item.getAttribute('data-period');
+                    gtag('event', 'archive_click', {
+                        'archive_period': period,
+                        'event_category': 'sidebar_widget'
+                    });
+                }
+            });
+        });
+    }
+
+    // 进度条动画
+    function initProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-fill');
+
+        // 使用 Intersection Observer 实现进入视口时的动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const progressFill = entry.target;
+                    const targetWidth = progressFill.style.width;
+
+                    // 重置宽度然后动画到目标宽度
+                    progressFill.style.width = '0%';
+                    progressFill.style.transition = 'width 1s ease';
+
+                    requestAnimationFrame(() => {
+                        progressFill.style.width = targetWidth;
+                    });
+
+                    observer.unobserve(progressFill);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        progressBars.forEach(bar => {
+            observer.observe(bar);
+        });
+    }
+
+    // 归档统计动画
+    function initStatsAnimation() {
+        const statValues = document.querySelectorAll('.stat-value');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statValue = entry.target;
+                    const finalValue = parseInt(statValue.textContent) || 0;
+
+                    animateNumber(statValue, 0, finalValue, 1000);
+                    observer.unobserve(statValue);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        statValues.forEach(stat => {
+            observer.observe(stat);
+        });
+    }
+
+    // 数字动画函数
+    function animateNumber(element, start, end, duration) {
+        const startTime = performance.now();
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // 使用缓动函数
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.round(start + (end - start) * easeOutCubic);
+
+            element.textContent = currentValue.toString();
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    // 键盘导航增强
+    function initKeyboardNavigation() {
+        const archiveLinks = document.querySelectorAll('.archive-link, .sub-archive-link');
+
+        archiveLinks.forEach((link, index) => {
+            link.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        const nextLink = archiveLinks[index + 1];
+                        if (nextLink) nextLink.focus();
+                        break;
+
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        const prevLink = archiveLinks[index - 1];
+                        if (prevLink) prevLink.focus();
+                        break;
+
+                    case 'Home':
+                        e.preventDefault();
+                        archiveLinks[0]?.focus();
+                        break;
+
+                    case 'End':
+                        e.preventDefault();
+                        archiveLinks[archiveLinks.length - 1]?.focus();
+                        break;
+                }
+            });
+        });
+    }
+
+    // 初始化所有功能
+    function init() {
+        initToggleFunction();
+        initTimelineInteraction();
+        initProgressBars();
+        initStatsAnimation();
+        initKeyboardNavigation();
+    }
+
+    // DOM加载完成后初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

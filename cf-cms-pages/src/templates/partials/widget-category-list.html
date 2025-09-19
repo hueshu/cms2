@@ -1,0 +1,1333 @@
+{{! 分类列表小工具模板 }}
+
+<div class="sidebar-widget category-list-widget" data-widget-id="category-list">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-folder-open" aria-hidden="true"></i>
+            {{widget.title}}
+        </h3>
+        {{#if widget.settings.showToggle}}
+        <button type="button"
+                class="widget-toggle-btn"
+                aria-label="展开/收起分类列表"
+                aria-expanded="true"
+                data-target="category-list-content">
+            <i class="fas fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="widget-content" id="category-list-content">
+        {{#if widget.data.categories}}
+
+        {{#if widget.settings.showSearch}}
+        <div class="category-search">
+            <input type="search"
+                   class="category-search-input"
+                   placeholder="搜索分类..."
+                   aria-label="搜索分类"
+                   autocomplete="off">
+            <i class="fas fa-search search-icon" aria-hidden="true"></i>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showAsTree}}
+        {{! 树形结构展示 }}
+        <div class="category-tree" role="tree" aria-label="分类树">
+            {{#each widget.data.categories}}
+            <div class="category-node {{#if this.children}}has-children{{/if}}"
+                 role="treeitem"
+                 aria-expanded="{{#if this.expanded}}true{{else}}false{{/if}}"
+                 data-category-id="{{this.id}}"
+                 data-level="0">
+
+                <div class="category-item-content">
+                    {{#if this.children}}
+                    <button type="button"
+                            class="category-toggle"
+                            aria-label="展开/收起子分类"
+                            tabindex="0">
+                        <i class="fas fa-chevron-right toggle-icon" aria-hidden="true"></i>
+                    </button>
+                    {{else}}
+                    <span class="category-spacer"></span>
+                    {{/if}}
+
+                    <div class="category-icon">
+                        {{#if this.icon}}
+                        <i class="{{this.icon}}" aria-hidden="true"></i>
+                        {{else}}
+                        <i class="fas fa-folder" aria-hidden="true"></i>
+                        {{/if}}
+                    </div>
+
+                    <a href="{{this.url}}"
+                       class="category-link"
+                       title="查看分类: {{this.name}}"
+                       tabindex="0">
+                        <span class="category-name">{{this.name}}</span>
+                        {{#if ../widget.data.showCount}}
+                        <span class="category-count">({{this.count}})</span>
+                        {{/if}}
+                    </a>
+
+                    {{#if this.description}}
+                    <div class="category-description" title="{{this.description}}">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    </div>
+                    {{/if}}
+                </div>
+
+                {{#if this.children}}
+                <div class="category-children" style="{{#unless this.expanded}}display: none;{{/unless}}">
+                    {{> categoryChildren children=this.children level=1}}
+                </div>
+                {{/if}}
+            </div>
+            {{/each}}
+        </div>
+
+        {{else}}
+
+        {{! 列表结构展示 }}
+        <ul class="category-list {{#if widget.data.showHierarchy}}hierarchical{{/if}}"
+            role="list"
+            aria-label="分类列表">
+            {{#each widget.data.categories}}
+            <li class="category-item"
+                role="listitem"
+                data-category-id="{{this.id}}"
+                data-level="0">
+
+                <div class="category-content">
+                    <div class="category-main">
+                        <div class="category-icon">
+                            {{#if this.icon}}
+                            <i class="{{this.icon}}" aria-hidden="true"></i>
+                            {{else}}
+                            <i class="fas fa-folder" aria-hidden="true"></i>
+                            {{/if}}
+                        </div>
+
+                        <a href="{{this.url}}"
+                           class="category-link"
+                           title="查看分类: {{this.name}}"
+                           tabindex="0">
+                            <span class="category-name">{{this.name}}</span>
+                        </a>
+
+                        {{#if ../widget.data.showCount}}
+                        <span class="category-count">({{this.count}})</span>
+                        {{/if}}
+                    </div>
+
+                    {{#if this.description}}
+                    <div class="category-description">
+                        {{truncate this.description 80}}
+                    </div>
+                    {{/if}}
+
+                    {{#if ../widget.settings.showProgress}}
+                    <div class="category-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"
+                                 style="width: {{multiply this.count 2}}%;"></div>
+                        </div>
+                        <span class="progress-text">{{this.count}} 篇文章</span>
+                    </div>
+                    {{/if}}
+                </div>
+
+                {{#if this.children}}
+                {{#if ../widget.data.showHierarchy}}
+                <ul class="subcategory-list" role="list">
+                    {{#each this.children}}
+                    <li class="subcategory-item" role="listitem" data-level="1">
+                        <div class="subcategory-content">
+                            <div class="subcategory-icon">
+                                {{#if this.icon}}
+                                <i class="{{this.icon}}" aria-hidden="true"></i>
+                                {{else}}
+                                <i class="fas fa-folder-open" aria-hidden="true"></i>
+                                {{/if}}
+                            </div>
+
+                            <a href="{{this.url}}" class="subcategory-link">
+                                <span class="subcategory-name">{{this.name}}</span>
+                            </a>
+
+                            {{#if ../../widget.data.showCount}}
+                            <span class="subcategory-count">({{this.count}})</span>
+                            {{/if}}
+                        </div>
+
+                        {{#if this.children}}
+                        <ul class="sub-subcategory-list">
+                            {{#each this.children}}
+                            <li class="sub-subcategory-item" data-level="2">
+                                <a href="{{this.url}}" class="sub-subcategory-link">
+                                    <i class="fas fa-file-alt sub-icon" aria-hidden="true"></i>
+                                    {{this.name}}
+                                    {{#if ../../../widget.data.showCount}}
+                                    ({{this.count}})
+                                    {{/if}}
+                                </a>
+                            </li>
+                            {{/each}}
+                        </ul>
+                        {{/if}}
+                    </li>
+                    {{/each}}
+                </ul>
+                {{/if}}
+                {{/if}}
+            </li>
+            {{/each}}
+        </ul>
+
+        {{/if}}
+
+        {{#if widget.settings.showStats}}
+        <div class="category-stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.totalCategories}}</span>
+                    <span class="stat-label">分类总数</span>
+                </div>
+                {{#if widget.data.categories.0}}
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.categories.0.count}}</span>
+                    <span class="stat-label">最大分类</span>
+                </div>
+                {{/if}}
+                <div class="stat-item">
+                    <span class="stat-value">{{sum widget.data.categories 'count'}}</span>
+                    <span class="stat-label">文章总数</span>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showViewAll}}
+        <div class="widget-footer">
+            <a href="/categories"
+               class="view-all-link"
+               title="查看全部分类">
+                查看全部分类
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+        {{/if}}
+
+        {{else}}
+        <div class="widget-empty">
+            <i class="far fa-folder-open empty-icon" aria-hidden="true"></i>
+            <p class="empty-text">暂无分类</p>
+            <a href="/admin/categories" class="empty-action">创建分类</a>
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if widget.settings.showRefresh}}
+    <div class="widget-actions">
+        <button type="button"
+                class="widget-refresh-btn"
+                data-widget="category-list"
+                title="刷新分类列表"
+                aria-label="刷新分类列表">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{/if}}
+</div>
+
+{{! 递归子分类模板 }}
+{{#define "categoryChildren"}}
+{{#each children}}
+<div class="category-node {{#if this.children}}has-children{{/if}}"
+     role="treeitem"
+     aria-expanded="false"
+     data-category-id="{{this.id}}"
+     data-level="{{../level}}">
+
+    <div class="category-item-content">
+        {{#if this.children}}
+        <button type="button"
+                class="category-toggle"
+                aria-label="展开/收起子分类">
+            <i class="fas fa-chevron-right toggle-icon" aria-hidden="true"></i>
+        </button>
+        {{else}}
+        <span class="category-spacer"></span>
+        {{/if}}
+
+        <div class="category-icon">
+            {{#if this.icon}}
+            <i class="{{this.icon}}" aria-hidden="true"></i>
+            {{else}}
+            <i class="fas fa-folder-open" aria-hidden="true"></i>
+            {{/if}}
+        </div>
+
+        <a href="{{this.url}}" class="category-link">
+            <span class="category-name">{{this.name}}</span>
+            <span class="category-count">({{this.count}})</span>
+        </a>
+    </div>
+
+    {{#if this.children}}
+    <div class="category-children" style="display: none;">
+        {{> categoryChildren children=this.children level=(add ../level 1)}}
+    </div>
+    {{/if}}
+</div>
+{{/each}}
+{{/define}}
+
+{{! 加载状态模板 }}
+<template id="category-list-loading">
+    <div class="sidebar-widget category-list-widget loading">
+        <div class="widget-header">
+            <h3 class="widget-title">
+                <i class="widget-icon fas fa-folder-open" aria-hidden="true"></i>
+                分类目录
+            </h3>
+        </div>
+        <div class="widget-content">
+            <div class="loading-skeleton">
+                {{#repeat 6}}
+                <div class="skeleton-item">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-name"></div>
+                        <div class="skeleton-count"></div>
+                    </div>
+                </div>
+                {{/repeat}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+/* 分类列表小工具样式 */
+.category-list-widget {
+    --primary-color: #3b82f6;
+    --secondary-color: #6b7280;
+    --text-color: #374151;
+    --border-color: #e5e7eb;
+    --bg-hover: #f9fafb;
+    --bg-focus: #eff6ff;
+    --meta-color: #6b7280;
+    --success-color: #10b981;
+    --folder-color: #f59e0b;
+    --indent-size: 1.5rem;
+}
+
+.category-list-widget .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.category-list-widget .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-list-widget .widget-icon {
+    color: var(--folder-color);
+    font-size: 1rem;
+}
+
+.widget-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.widget-toggle-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-hover);
+}
+
+.widget-toggle-btn i {
+    transition: transform 0.2s ease;
+}
+
+.widget-toggle-btn[aria-expanded="false"] i {
+    transform: rotate(180deg);
+}
+
+/* 分类搜索样式 */
+.category-search {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.category-search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    padding-right: 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    background-color: white;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.category-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--meta-color);
+    pointer-events: none;
+}
+
+/* 树形结构样式 */
+.category-tree {
+    margin: 0;
+}
+
+.category-node {
+    margin-bottom: 0.25rem;
+}
+
+.category-node[data-level="0"] {
+    margin-left: 0;
+}
+
+.category-node[data-level="1"] {
+    margin-left: var(--indent-size);
+}
+
+.category-node[data-level="2"] {
+    margin-left: calc(var(--indent-size) * 2);
+}
+
+.category-node[data-level="3"] {
+    margin-left: calc(var(--indent-size) * 3);
+}
+
+.category-item-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.category-item-content:hover {
+    background-color: var(--bg-hover);
+}
+
+.category-toggle {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.125rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.category-toggle:hover {
+    background-color: var(--bg-focus);
+    color: var(--primary-color);
+}
+
+.toggle-icon {
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.category-node[aria-expanded="true"] .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.category-spacer {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.category-icon {
+    color: var(--folder-color);
+    font-size: 0.9rem;
+    width: 1rem;
+    text-align: center;
+}
+
+.category-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    min-width: 0;
+    transition: color 0.2s ease;
+}
+
+.category-link:hover {
+    color: var(--primary-color);
+}
+
+.category-link:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+.category-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-count {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+.category-description {
+    color: var(--meta-color);
+    cursor: help;
+}
+
+.category-children {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* 列表结构样式 */
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-item {
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.category-content {
+    transition: all 0.2s ease;
+}
+
+.category-content:hover {
+    background-color: var(--bg-hover);
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: 0.5rem;
+}
+
+.category-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-main .category-icon {
+    font-size: 1rem;
+}
+
+.category-main .category-link {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.category-main .category-count {
+    font-size: 0.9rem;
+}
+
+.category-description {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    margin: 0.25rem 0 0.5rem 1.75rem;
+    line-height: 1.4;
+}
+
+.category-progress {
+    margin: 0.5rem 0 0 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 0.25rem;
+    background-color: #f3f4f6;
+    border-radius: 0.125rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 0.125rem;
+    transition: width 0.3s ease;
+    max-width: 100%;
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    white-space: nowrap;
+}
+
+/* 子分类样式 */
+.subcategory-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 1.5rem;
+    border-left: 2px solid var(--border-color);
+}
+
+.subcategory-item {
+    padding-left: 1rem;
+    position: relative;
+    margin-bottom: 0.375rem;
+}
+
+.subcategory-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0.6rem;
+    width: 8px;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.subcategory-item:hover::before {
+    background-color: var(--primary-color);
+}
+
+.subcategory-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subcategory-icon {
+    color: var(--folder-color);
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.subcategory-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
+}
+
+.subcategory-link:hover {
+    color: var(--primary-color);
+}
+
+.subcategory-name {
+    font-weight: 400;
+}
+
+.subcategory-count {
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    opacity: 0.8;
+}
+
+.sub-subcategory-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.375rem 0 0 1rem;
+}
+
+.sub-subcategory-item {
+    margin-bottom: 0.25rem;
+}
+
+.sub-subcategory-link {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--meta-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.125rem 0;
+    transition: color 0.2s ease;
+}
+
+.sub-subcategory-link:hover {
+    color: var(--primary-color);
+}
+
+.sub-icon {
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
+/* 统计信息样式 */
+.category-stats {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    margin-top: 0.25rem;
+}
+
+.widget-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.view-all-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+    background-color: var(--bg-focus);
+    transform: translateX(0.25rem);
+}
+
+.widget-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--meta-color);
+}
+
+.empty-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.empty-action {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.empty-action:hover {
+    background-color: #2563eb;
+}
+
+.widget-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.widget-refresh-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--meta-color);
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-refresh-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.widget-refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* 加载状态样式 */
+.loading-skeleton .skeleton-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.skeleton-icon {
+    width: 1rem;
+    height: 1rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+.skeleton-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.skeleton-name {
+    width: 60%;
+    height: 1rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+.skeleton-count {
+    width: 20%;
+    height: 0.8rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .category-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .category-main .category-link {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .subcategory-list,
+    .category-description,
+    .category-progress {
+        margin-left: 0;
+    }
+
+    .category-node {
+        margin-left: calc(var(--data-level, 0) * 1rem) !important;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .category-list-widget {
+        --text-color: #f3f4f6;
+        --border-color: #374151;
+        --bg-hover: #1f2937;
+        --bg-focus: #1e3a8a;
+        --meta-color: #9ca3af;
+    }
+
+    .category-search-input,
+    .category-count {
+        background-color: #374151;
+        color: #f3f4f6;
+        border-color: #4b5563;
+    }
+
+    .progress-bar {
+        background-color: #374151;
+    }
+
+    .widget-refresh-btn {
+        border-color: #374151;
+    }
+
+    .subcategory-item::before {
+        background-color: #4b5563;
+    }
+}
+
+/* 无障碍访问增强 */
+@media (prefers-reduced-motion: reduce) {
+    .category-link,
+    .subcategory-link,
+    .view-all-link,
+    .widget-refresh-btn,
+    .category-toggle,
+    .toggle-icon,
+    .category-children,
+    .progress-fill {
+        transition: none;
+    }
+
+    .skeleton-icon,
+    .skeleton-name,
+    .skeleton-count {
+        animation: none;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .widget-actions,
+    .widget-toggle-btn,
+    .category-toggle,
+    .category-search {
+        display: none;
+    }
+
+    .category-list-widget {
+        break-inside: avoid;
+    }
+
+    .category-children {
+        display: block !important;
+    }
+}
+</style>
+
+<script>
+// 分类列表小工具交互功能
+(function() {
+    'use strict';
+
+    let searchInput, searchTimeout;
+
+    // 初始化分类列表功能
+    function initCategoryListWidget() {
+        initToggleFunction();
+        initTreeToggle();
+        initCategorySearch();
+        initKeyboardNavigation();
+        initProgressBars();
+    }
+
+    // 折叠/展开功能
+    function initToggleFunction() {
+        const toggleBtn = document.querySelector('.widget-toggle-btn');
+        const targetId = toggleBtn?.getAttribute('data-target');
+        const targetElement = targetId ? document.getElementById(targetId) : null;
+
+        if (!toggleBtn || !targetElement) return;
+
+        toggleBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+
+            this.setAttribute('aria-expanded', newState.toString());
+
+            if (newState) {
+                targetElement.style.display = 'block';
+                targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+            } else {
+                targetElement.style.maxHeight = '0';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 300);
+            }
+
+            // 保存状态
+            localStorage.setItem('category-widget-expanded', newState.toString());
+        });
+
+        // 恢复状态
+        const savedState = localStorage.getItem('category-widget-expanded');
+        if (savedState === 'false') {
+            toggleBtn.click();
+        }
+    }
+
+    // 树形结构展开/收起
+    function initTreeToggle() {
+        const categoryTree = document.querySelector('.category-tree');
+        if (!categoryTree) return;
+
+        categoryTree.addEventListener('click', function(e) {
+            const toggleBtn = e.target.closest('.category-toggle');
+            if (!toggleBtn) return;
+
+            e.preventDefault();
+
+            const categoryNode = toggleBtn.closest('.category-node');
+            const categoryChildren = categoryNode.querySelector('.category-children');
+            const isExpanded = categoryNode.getAttribute('aria-expanded') === 'true';
+
+            // 切换状态
+            categoryNode.setAttribute('aria-expanded', (!isExpanded).toString());
+
+            // 动画展开/收起
+            if (isExpanded) {
+                // 收起
+                categoryChildren.style.maxHeight = categoryChildren.scrollHeight + 'px';
+                requestAnimationFrame(() => {
+                    categoryChildren.style.maxHeight = '0';
+                });
+                setTimeout(() => {
+                    categoryChildren.style.display = 'none';
+                }, 300);
+            } else {
+                // 展开
+                categoryChildren.style.display = 'block';
+                categoryChildren.style.maxHeight = '0';
+                requestAnimationFrame(() => {
+                    categoryChildren.style.maxHeight = categoryChildren.scrollHeight + 'px';
+                });
+            }
+
+            // 保存展开状态
+            const categoryId = categoryNode.getAttribute('data-category-id');
+            saveExpandedState(categoryId, !isExpanded);
+
+            // 统计点击
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'category_toggle', {
+                    'category_id': categoryId,
+                    'expanded': !isExpanded,
+                    'event_category': 'sidebar_widget'
+                });
+            }
+        });
+
+        // 恢复展开状态
+        restoreExpandedStates();
+    }
+
+    // 分类搜索功能
+    function initCategorySearch() {
+        searchInput = document.querySelector('.category-search-input');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterCategories(query);
+            }, 300);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                filterCategories('');
+                this.blur();
+            }
+        });
+    }
+
+    // 过滤分类
+    function filterCategories(query) {
+        const categoryItems = document.querySelectorAll('.category-item, .category-node');
+
+        categoryItems.forEach(item => {
+            const categoryName = item.querySelector('.category-name')?.textContent.toLowerCase() || '';
+            const categoryDesc = item.querySelector('.category-description')?.textContent.toLowerCase() || '';
+
+            const matches = !query ||
+                           categoryName.includes(query) ||
+                           categoryDesc.includes(query);
+
+            if (matches) {
+                item.style.display = '';
+                item.style.opacity = '1';
+
+                // 如果是搜索结果，高亮显示
+                if (query) {
+                    highlightSearchTerm(item, query);
+                } else {
+                    removeHighlight(item);
+                }
+            } else {
+                item.style.display = 'none';
+                item.style.opacity = '0.3';
+            }
+        });
+
+        // 显示搜索结果统计
+        updateSearchResults(query);
+    }
+
+    // 高亮搜索词
+    function highlightSearchTerm(item, term) {
+        const nameElement = item.querySelector('.category-name');
+        if (!nameElement) return;
+
+        const originalText = nameElement.getAttribute('data-original-text') || nameElement.textContent;
+        nameElement.setAttribute('data-original-text', originalText);
+
+        const regex = new RegExp(`(${escapeRegex(term)})`, 'gi');
+        const highlightedText = originalText.replace(regex, '<mark>$1</mark>');
+        nameElement.innerHTML = highlightedText;
+    }
+
+    // 移除高亮
+    function removeHighlight(item) {
+        const nameElement = item.querySelector('.category-name');
+        if (!nameElement) return;
+
+        const originalText = nameElement.getAttribute('data-original-text');
+        if (originalText) {
+            nameElement.textContent = originalText;
+            nameElement.removeAttribute('data-original-text');
+        }
+    }
+
+    // 更新搜索结果统计
+    function updateSearchResults(query) {
+        const visibleItems = document.querySelectorAll('.category-item:not([style*="display: none"]), .category-node:not([style*="display: none"])');
+
+        // 这里可以添加搜索结果统计显示
+        if (query && visibleItems.length === 0) {
+            showNoResults();
+        } else {
+            hideNoResults();
+        }
+    }
+
+    // 显示无结果提示
+    function showNoResults() {
+        let noResults = document.querySelector('.category-no-results');
+        if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.className = 'category-no-results';
+            noResults.innerHTML = `
+                <div style="text-align: center; padding: 2rem 1rem; color: #6b7280;">
+                    <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                    <p>未找到匹配的分类</p>
+                </div>
+            `;
+
+            const widget = document.querySelector('.category-list-widget .widget-content');
+            widget?.appendChild(noResults);
+        }
+        noResults.style.display = 'block';
+    }
+
+    // 隐藏无结果提示
+    function hideNoResults() {
+        const noResults = document.querySelector('.category-no-results');
+        if (noResults) {
+            noResults.style.display = 'none';
+        }
+    }
+
+    // 键盘导航
+    function initKeyboardNavigation() {
+        const categoryLinks = document.querySelectorAll('.category-link, .subcategory-link, .sub-subcategory-link');
+
+        categoryLinks.forEach((link, index) => {
+            link.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        const nextLink = categoryLinks[index + 1];
+                        if (nextLink) nextLink.focus();
+                        break;
+
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        const prevLink = categoryLinks[index - 1];
+                        if (prevLink) prevLink.focus();
+                        break;
+
+                    case 'Home':
+                        e.preventDefault();
+                        categoryLinks[0]?.focus();
+                        break;
+
+                    case 'End':
+                        e.preventDefault();
+                        categoryLinks[categoryLinks.length - 1]?.focus();
+                        break;
+
+                    case ' ':
+                    case 'Enter':
+                        // 让默认行为处理
+                        break;
+                }
+            });
+
+            link.addEventListener('click', function() {
+                const categoryName = this.querySelector('.category-name, .subcategory-name')?.textContent;
+
+                // 统计点击
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'category_click', {
+                        'category_name': categoryName,
+                        'event_category': 'sidebar_widget'
+                    });
+                }
+            });
+        });
+    }
+
+    // 进度条动画
+    function initProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-fill');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const progressFill = entry.target;
+                    const targetWidth = progressFill.style.width;
+
+                    progressFill.style.width = '0%';
+                    progressFill.style.transition = 'width 1s ease';
+
+                    requestAnimationFrame(() => {
+                        progressFill.style.width = targetWidth;
+                    });
+
+                    observer.unobserve(progressFill);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        progressBars.forEach(bar => {
+            observer.observe(bar);
+        });
+    }
+
+    // 保存展开状态
+    function saveExpandedState(categoryId, expanded) {
+        try {
+            const expandedStates = JSON.parse(localStorage.getItem('categoryExpandedStates') || '{}');
+            expandedStates[categoryId] = expanded;
+            localStorage.setItem('categoryExpandedStates', JSON.stringify(expandedStates));
+        } catch (error) {
+            console.error('Failed to save expanded state:', error);
+        }
+    }
+
+    // 恢复展开状态
+    function restoreExpandedStates() {
+        try {
+            const expandedStates = JSON.parse(localStorage.getItem('categoryExpandedStates') || '{}');
+
+            Object.entries(expandedStates).forEach(([categoryId, expanded]) => {
+                if (expanded) {
+                    const categoryNode = document.querySelector(`[data-category-id="${categoryId}"]`);
+                    const toggleBtn = categoryNode?.querySelector('.category-toggle');
+
+                    if (toggleBtn) {
+                        // 模拟点击来展开
+                        setTimeout(() => {
+                            toggleBtn.click();
+                        }, 100);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to restore expanded states:', error);
+        }
+    }
+
+    // 工具函数
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // 初始化所有功能
+    function init() {
+        initCategoryListWidget();
+    }
+
+    // DOM加载完成后初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

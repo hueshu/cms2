@@ -5,6 +5,8 @@ node_compat = true
 
 [vars]
 ENVIRONMENT = "development"
+# CLOUDFLARE_API_TOKEN = "your-cloudflare-api-token"
+# CLOUDFLARE_API_EMAIL = "your-cloudflare-api-email"
 
 [[kv_namespaces]]
 binding = "CACHE_KV"
@@ -18,6 +20,10 @@ database_id = "your-database-id"
 
 [env.production]
 vars = { ENVIRONMENT = "production" }
+# Set these as secrets: wrangler secret put CLOUDFLARE_API_TOKEN
+# wrangler secret put CLOUDFLARE_API_EMAIL
 
 [env.staging]
 vars = { ENVIRONMENT = "staging" }
+# Set these as secrets: wrangler secret put CLOUDFLARE_API_TOKEN --env staging
+# wrangler secret put CLOUDFLARE_API_EMAIL --env staging

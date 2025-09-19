@@ -1,0 +1,292 @@
+{{! 底部导航部分模板 }}
+
+<nav class="footer-nav" role="navigation" aria-label="底部导航">
+    <div class="footer-nav-grid">
+        <!-- 主要导航 -->
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">主要导航</h4>
+            <ul class="footer-nav-list">
+                <li class="footer-nav-item">
+                    <a href="/" class="footer-nav-link">首页</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/articles" class="footer-nav-link">文章</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/tags" class="footer-nav-link">标签</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/archives" class="footer-nav-link">归档</a>
+                </li>
+                {{#if site.config.features.enableSearch}}
+                <li class="footer-nav-item">
+                    <a href="/search" class="footer-nav-link">搜索</a>
+                </li>
+                {{/if}}
+            </ul>
+        </div>
+
+        <!-- 内容分类 -->
+        {{#if categories}}
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">内容分类</h4>
+            <ul class="footer-nav-list">
+                {{#each categories}}
+                <li class="footer-nav-item">
+                    <a href="/categories/{{this.slug}}" class="footer-nav-link">
+                        {{this.name}}
+                        <span class="nav-count">({{this.count}})</span>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+
+        <!-- 热门标签 -->
+        {{#if popularTags}}
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">热门标签</h4>
+            <div class="footer-tag-cloud">
+                {{#each popularTags}}
+                <a href="/tags/{{this.slug}}"
+                   class="footer-tag-link"
+                   title="{{this.count}} 篇文章">
+                    {{this.name}}
+                </a>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+
+        <!-- 网站信息 -->
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">网站信息</h4>
+            <ul class="footer-nav-list">
+                <li class="footer-nav-item">
+                    <a href="/about" class="footer-nav-link">关于我们</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/contact" class="footer-nav-link">联系方式</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/privacy" class="footer-nav-link">隐私政策</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/terms" class="footer-nav-link">使用条款</a>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="/sitemap" class="footer-nav-link">网站地图</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 订阅和社交 -->
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">关注我们</h4>
+            <div class="footer-social-links">
+                {{#if site.config.rss}}
+                <a href="/rss"
+                   class="footer-social-link rss"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="RSS订阅">
+                    <span class="social-icon">📡</span>
+                    <span class="social-text">RSS</span>
+                </a>
+                {{/if}}
+
+                {{#if site.config.social}}
+                {{#each site.config.social}}
+                <a href="{{this.url}}"
+                   class="footer-social-link {{this.platform}}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="{{this.name}}">
+                    <span class="social-icon">{{this.icon}}</span>
+                    <span class="social-text">{{this.name}}</span>
+                </a>
+                {{/each}}
+                {{/if}}
+
+                {{#if site.config.newsletter}}
+                <a href="/newsletter"
+                   class="footer-social-link newsletter"
+                   aria-label="邮件订阅">
+                    <span class="social-icon">📧</span>
+                    <span class="social-text">订阅</span>
+                </a>
+                {{/if}}
+            </div>
+
+            <!-- 友情链接 -->
+            {{#if site.config.friendLinks}}
+            <div class="footer-friends">
+                <h5 class="friends-title">友情链接</h5>
+                <div class="friends-list">
+                    {{#each site.config.friendLinks}}
+                    <a href="{{this.url}}"
+                       class="friend-link"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       title="{{this.description}}">
+                        {{this.name}}
+                    </a>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- 快速工具 -->
+        <div class="footer-nav-section">
+            <h4 class="footer-nav-title">快速工具</h4>
+            <ul class="footer-nav-list">
+                <li class="footer-nav-item">
+                    <button onclick="toggleTheme()" class="footer-nav-link theme-toggle">
+                        🌓 切换主题
+                    </button>
+                </li>
+                <li class="footer-nav-item">
+                    <button onclick="toggleFontSize()" class="footer-nav-link font-toggle">
+                        🔤 字体大小
+                    </button>
+                </li>
+                <li class="footer-nav-item">
+                    <a href="#top" class="footer-nav-link back-to-top">
+                        ↑ 回到顶部
+                    </a>
+                </li>
+                {{#if site.config.pwa}}
+                <li class="footer-nav-item">
+                    <button onclick="installPWA()" class="footer-nav-link pwa-install" id="pwa-install-btn" style="display: none;">
+                        📱 安装应用
+                    </button>
+                </li>
+                {{/if}}
+                <li class="footer-nav-item">
+                    <button onclick="printPage()" class="footer-nav-link print-page">
+                        🖨️ 打印页面
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 底部快速访问 -->
+    <div class="footer-quick-access">
+        <div class="quick-stats">
+            <span class="stat-item">
+                <strong>{{site.stats.articleCount}}</strong> 篇文章
+            </span>
+            <span class="stat-item">
+                <strong>{{site.stats.tagCount}}</strong> 个标签
+            </span>
+            <span class="stat-item">
+                <strong>{{site.stats.totalViews}}</strong> 次阅读
+            </span>
+            <span class="stat-item">
+                运行 <strong>{{daysSince site.created_at}}</strong> 天
+            </span>
+        </div>
+
+        <!-- 最新文章快速链接 -->
+        {{#if recentArticles}}
+        <div class="quick-recent">
+            <span class="quick-label">最新:</span>
+            {{#each (limit recentArticles 3)}}
+            <a href="/articles/{{this.slug}}" class="quick-link" title="{{this.title}}">
+                {{truncate this.title 20}}
+            </a>
+            {{/each}}
+        </div>
+        {{/if}}
+    </div>
+</nav>
+
+<!-- 底部导航脚本 -->
+<script>
+// 主题切换
+function toggleTheme() {
+    const currentTheme = localStorage.getItem('theme') || 'light'
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light'
+
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+
+    // 更新按钮文本
+    const toggleBtn = document.querySelector('.theme-toggle')
+    if (toggleBtn) {
+        toggleBtn.textContent = newTheme === 'light' ? '🌓 切换主题' : '☀️ 切换主题'
+    }
+}
+
+// 字体大小切换
+function toggleFontSize() {
+    const currentSize = localStorage.getItem('fontSize') || 'normal'
+    const sizes = ['small', 'normal', 'large']
+    const currentIndex = sizes.indexOf(currentSize)
+    const newSize = sizes[(currentIndex + 1) % sizes.length]
+
+    localStorage.setItem('fontSize', newSize)
+    document.documentElement.setAttribute('data-font-size', newSize)
+
+    // 更新按钮文本
+    const toggleBtn = document.querySelector('.font-toggle')
+    if (toggleBtn) {
+        const sizeNames = { small: '小', normal: '中', large: '大' }
+        toggleBtn.textContent = `🔤 字体: ${sizeNames[newSize]}`
+    }
+}
+
+// PWA安装
+let deferredPrompt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    deferredPrompt = e
+    const installBtn = document.getElementById('pwa-install-btn')
+    if (installBtn) {
+        installBtn.style.display = 'block'
+    }
+})
+
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt()
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('PWA安装接受')
+            }
+            deferredPrompt = null
+        })
+    }
+}
+
+// 打印页面
+function printPage() {
+    window.print()
+}
+
+// 应用保存的设置
+document.addEventListener('DOMContentLoaded', function() {
+    // 应用主题
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+
+    // 应用字体大小
+    const savedFontSize = localStorage.getItem('fontSize') || 'normal'
+    document.documentElement.setAttribute('data-font-size', savedFontSize)
+
+    // 更新按钮状态
+    const themeBtn = document.querySelector('.theme-toggle')
+    if (themeBtn) {
+        themeBtn.textContent = savedTheme === 'light' ? '🌓 切换主题' : '☀️ 切换主题'
+    }
+
+    const fontBtn = document.querySelector('.font-toggle')
+    if (fontBtn) {
+        const sizeNames = { small: '小', normal: '中', large: '大' }
+        fontBtn.textContent = `🔤 字体: ${sizeNames[savedFontSize]}`
+    }
+})
+</script>

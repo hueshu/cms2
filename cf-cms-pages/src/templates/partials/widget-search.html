@@ -1,0 +1,1234 @@
+{{! 搜索框小工具模板 }}
+
+<div class="sidebar-widget search-widget" data-widget-id="search">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-search" aria-hidden="true"></i>
+            {{widget.title}}
+        </h3>
+    </div>
+
+    <div class="widget-content">
+        <form class="search-form"
+              action="{{widget.data.actionUrl}}"
+              method="get"
+              role="search"
+              aria-label="网站搜索">
+
+            <div class="search-input-group">
+                <div class="search-input-wrapper">
+                    <input type="search"
+                           name="q"
+                           class="search-input"
+                           placeholder="{{widget.data.placeholder}}"
+                           aria-label="搜索内容"
+                           autocomplete="off"
+                           spellcheck="false"
+                           {{#if widget.data.showSuggestions}}
+                           data-suggestions="true"
+                           autocomplete="off"
+                           {{/if}}
+                           required>
+
+                    <button type="button"
+                            class="search-clear-btn"
+                            style="display: none;"
+                            aria-label="清除搜索内容"
+                            tabindex="-1">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <button type="submit"
+                        class="search-btn"
+                        aria-label="执行搜索">
+                    <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                    <i class="fas fa-spinner search-loading" style="display: none;" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            {{#if widget.data.showSuggestions}}
+            <div class="search-suggestions"
+                 style="display: none;"
+                 role="listbox"
+                 aria-label="搜索建议">
+                <ul class="suggestions-list" role="group"></ul>
+                <div class="suggestions-footer">
+                    <span class="suggestions-tip">按 Enter 搜索，↑↓ 选择建议</span>
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if widget.settings.showAdvanced}}
+            <div class="search-advanced" style="display: none;">
+                <div class="advanced-options">
+                    <label class="search-option">
+                        <input type="checkbox" name="tags" value="1">
+                        <span class="option-text">包含标签</span>
+                    </label>
+                    <label class="search-option">
+                        <input type="checkbox" name="content" value="1" checked>
+                        <span class="option-text">搜索正文</span>
+                    </label>
+                    <label class="search-option">
+                        <input type="checkbox" name="title" value="1" checked>
+                        <span class="option-text">搜索标题</span>
+                    </label>
+                </div>
+
+                <div class="search-filters">
+                    <select name="category" class="filter-select" aria-label="选择分类">
+                        <option value="">所有分类</option>
+                        {{#each widget.data.categories}}
+                        <option value="{{this.slug}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+
+                    <select name="sort" class="filter-select" aria-label="排序方式">
+                        <option value="relevance">相关度</option>
+                        <option value="date">发布时间</option>
+                        <option value="views">阅读量</option>
+                        <option value="title">标题</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button"
+                    class="search-advanced-toggle"
+                    aria-label="高级搜索选项"
+                    aria-expanded="false">
+                <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                <span>高级搜索</span>
+                <i class="fas fa-chevron-down toggle-icon" aria-hidden="true"></i>
+            </button>
+            {{/if}}
+        </form>
+
+        {{#if widget.data.showHotKeywords}}
+        {{#if widget.data.hotKeywords}}
+        <div class="hot-keywords">
+            <div class="hot-keywords-header">
+                <i class="fas fa-fire hot-icon" aria-hidden="true"></i>
+                <span class="hot-keywords-label">热门搜索</span>
+            </div>
+            <div class="hot-keywords-list">
+                {{#each widget.data.hotKeywords}}
+                <a href="{{this.url}}"
+                   class="hot-keyword"
+                   title="搜索: {{this.name}}"
+                   data-keyword="{{this.name}}">
+                    {{this.name}}
+                </a>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if widget.settings.showSearchHistory}}
+        <div class="search-history" style="display: none;">
+            <div class="history-header">
+                <span class="history-label">搜索历史</span>
+                <button type="button"
+                        class="history-clear-btn"
+                        aria-label="清除搜索历史">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                </button>
+            </div>
+            <ul class="history-list"></ul>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showQuickSearch}}
+        <div class="quick-search">
+            <div class="quick-search-header">
+                <i class="fas fa-bolt quick-icon" aria-hidden="true"></i>
+                <span class="quick-search-label">快速搜索</span>
+            </div>
+            <div class="quick-search-buttons">
+                <button type="button"
+                        class="quick-search-btn"
+                        data-query="教程"
+                        title="搜索教程相关内容">
+                    📚 教程
+                </button>
+                <button type="button"
+                        class="quick-search-btn"
+                        data-query="技术"
+                        title="搜索技术相关内容">
+                    💻 技术
+                </button>
+                <button type="button"
+                        class="quick-search-btn"
+                        data-query="工具"
+                        title="搜索工具相关内容">
+                    🔧 工具
+                </button>
+                <button type="button"
+                        class="quick-search-btn"
+                        data-query="分享"
+                        title="搜索分享相关内容">
+                    💡 分享
+                </button>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if widget.settings.showRefresh}}
+    <div class="widget-actions">
+        <button type="button"
+                class="widget-refresh-btn"
+                data-widget="search"
+                title="刷新搜索热词"
+                aria-label="刷新搜索热词">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{/if}}
+</div>
+
+{{! 搜索结果预览模板 }}
+<template id="search-suggestion-item">
+    <li class="suggestion-item" role="option" tabindex="-1">
+        <div class="suggestion-content">
+            <div class="suggestion-icon">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </div>
+            <div class="suggestion-text">
+                <div class="suggestion-title"></div>
+                <div class="suggestion-meta"></div>
+            </div>
+            <div class="suggestion-action">
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </div>
+        </div>
+    </li>
+</template>
+
+<style>
+/* 搜索框小工具样式 */
+.search-widget {
+    --primary-color: #3b82f6;
+    --secondary-color: #6b7280;
+    --text-color: #374151;
+    --border-color: #e5e7eb;
+    --bg-hover: #f9fafb;
+    --bg-focus: #eff6ff;
+    --meta-color: #6b7280;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+}
+
+.search-widget .widget-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.search-widget .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-widget .widget-icon {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+/* 搜索表单样式 */
+.search-form {
+    position: relative;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    padding-right: 2.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    background-color: white;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background-color: var(--bg-focus);
+}
+
+.search-input:valid {
+    border-color: var(--success-color);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--meta-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    color: var(--error-color);
+    background-color: var(--bg-hover);
+}
+
+.search-btn {
+    padding: 0.75rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    position: relative;
+}
+
+.search-btn:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.search-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.search-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.search-loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 搜索建议样式 */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 3.5rem;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.suggestions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.suggestion-item {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.suggestion-item:hover,
+.suggestion-item[aria-selected="true"] {
+    background-color: var(--bg-focus);
+}
+
+.suggestion-content {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+}
+
+.suggestion-icon {
+    color: var(--meta-color);
+    flex-shrink: 0;
+}
+
+.suggestion-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-title {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-meta {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    margin-top: 0.125rem;
+}
+
+.suggestion-action {
+    color: var(--meta-color);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.suggestion-item:hover .suggestion-action,
+.suggestion-item[aria-selected="true"] .suggestion-action {
+    opacity: 1;
+}
+
+.suggestions-footer {
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-hover);
+}
+
+.suggestions-tip {
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    font-style: italic;
+}
+
+/* 高级搜索样式 */
+.search-advanced {
+    background-color: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.advanced-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.search-option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color);
+}
+
+.search-filters {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-select {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background-color: white;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.search-advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.search-advanced-toggle:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+.toggle-icon {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.search-advanced-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* 热门关键词样式 */
+.hot-keywords {
+    margin-bottom: 1rem;
+}
+
+.hot-keywords-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.hot-icon {
+    color: var(--warning-color);
+    font-size: 0.9rem;
+}
+
+.hot-keywords-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.hot-keywords-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.hot-keyword {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #f3f4f6;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.hot-keyword:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.hot-keyword:active {
+    transform: translateY(0);
+}
+
+/* 搜索历史样式 */
+.search-history {
+    margin-bottom: 1rem;
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.history-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.history-clear-btn {
+    background: none;
+    border: none;
+    color: var(--meta-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.history-clear-btn:hover {
+    color: var(--error-color);
+    background-color: var(--bg-hover);
+}
+
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.history-item {
+    padding: 0.25rem 0;
+}
+
+.history-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--meta-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.history-link:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-color);
+}
+
+/* 快速搜索样式 */
+.quick-search {
+    margin-bottom: 1rem;
+}
+
+.quick-search-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.quick-icon {
+    color: var(--warning-color);
+    font-size: 0.9rem;
+}
+
+.quick-search-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.quick-search-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.quick-search-btn {
+    padding: 0.5rem;
+    background-color: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.quick-search-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.widget-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.widget-refresh-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--meta-color);
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-refresh-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.widget-refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .search-input-group {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        align-self: stretch;
+    }
+
+    .advanced-options {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-filters {
+        flex-direction: column;
+    }
+
+    .quick-search-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .search-suggestions {
+        right: 0;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .search-widget {
+        --text-color: #f3f4f6;
+        --border-color: #374151;
+        --bg-hover: #1f2937;
+        --bg-focus: #1e3a8a;
+        --meta-color: #9ca3af;
+    }
+
+    .search-input,
+    .filter-select {
+        background-color: #1f2937;
+        color: #f3f4f6;
+        border-color: #374151;
+    }
+
+    .search-suggestions {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+
+    .search-advanced {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+
+    .hot-keyword,
+    .quick-search-btn {
+        background-color: #374151;
+        color: #f3f4f6;
+        border-color: #4b5563;
+    }
+
+    .widget-refresh-btn {
+        border-color: #374151;
+    }
+}
+
+/* 无障碍访问增强 */
+@media (prefers-reduced-motion: reduce) {
+    .search-input,
+    .search-btn,
+    .hot-keyword,
+    .quick-search-btn,
+    .widget-refresh-btn,
+    .suggestion-item,
+    .search-clear-btn,
+    .history-clear-btn {
+        transition: none;
+    }
+
+    .search-loading {
+        animation: none;
+    }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+    .search-input,
+    .filter-select {
+        border-width: 3px;
+    }
+
+    .search-btn,
+    .hot-keyword,
+    .quick-search-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .widget-actions,
+    .search-suggestions,
+    .search-advanced {
+        display: none;
+    }
+
+    .search-widget {
+        break-inside: avoid;
+    }
+}
+</style>
+
+<script>
+// 搜索框小工具交互功能
+(function() {
+    'use strict';
+
+    let searchForm, searchInput, searchBtn, searchClearBtn;
+    let searchSuggestions, suggestionsList;
+    let currentSuggestionIndex = -1;
+    let searchTimeout;
+
+    // 初始化搜索功能
+    function initSearchWidget() {
+        searchForm = document.querySelector('.search-form');
+        searchInput = document.querySelector('.search-input');
+        searchBtn = document.querySelector('.search-btn');
+        searchClearBtn = document.querySelector('.search-clear-btn');
+        searchSuggestions = document.querySelector('.search-suggestions');
+        suggestionsList = document.querySelector('.suggestions-list');
+
+        if (!searchForm || !searchInput) return;
+
+        initSearchInput();
+        initSearchSuggestions();
+        initAdvancedSearch();
+        initHotKeywords();
+        initQuickSearch();
+        initSearchHistory();
+    }
+
+    // 搜索输入框功能
+    function initSearchInput() {
+        // 输入事件
+        searchInput.addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+
+            // 显示/隐藏清除按钮
+            if (searchClearBtn) {
+                searchClearBtn.style.display = value ? 'block' : 'none';
+            }
+
+            // 防抖搜索建议
+            if (searchSuggestions && value.length > 0) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    fetchSearchSuggestions(value);
+                }, 300);
+            } else {
+                hideSuggestions();
+            }
+        });
+
+        // 键盘导航
+        searchInput.addEventListener('keydown', function(e) {
+            if (!searchSuggestions || searchSuggestions.style.display === 'none') {
+                return;
+            }
+
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    navigateSuggestions(1);
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    navigateSuggestions(-1);
+                    break;
+
+                case 'Enter':
+                    if (currentSuggestionIndex >= 0) {
+                        e.preventDefault();
+                        selectSuggestion(currentSuggestionIndex);
+                    }
+                    break;
+
+                case 'Escape':
+                    hideSuggestions();
+                    break;
+            }
+        });
+
+        // 清除按钮
+        if (searchClearBtn) {
+            searchClearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.focus();
+                this.style.display = 'none';
+                hideSuggestions();
+            });
+        }
+
+        // 失焦隐藏建议（延迟以允许点击建议）
+        searchInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                hideSuggestions();
+            }, 200);
+        });
+    }
+
+    // 搜索建议功能
+    function initSearchSuggestions() {
+        if (!searchSuggestions || !suggestionsList) return;
+
+        // 建议项点击事件（事件委托）
+        suggestionsList.addEventListener('click', function(e) {
+            const suggestionItem = e.target.closest('.suggestion-item');
+            if (suggestionItem) {
+                const index = Array.from(suggestionsList.children).indexOf(suggestionItem);
+                selectSuggestion(index);
+            }
+        });
+    }
+
+    // 获取搜索建议
+    async function fetchSearchSuggestions(query) {
+        if (!query || query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        try {
+            // 这里应该调用实际的搜索API
+            // const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`);
+            // const suggestions = await response.json();
+
+            // 模拟搜索建议
+            const suggestions = generateMockSuggestions(query);
+
+            displaySuggestions(suggestions);
+        } catch (error) {
+            console.error('Failed to fetch search suggestions:', error);
+            hideSuggestions();
+        }
+    }
+
+    // 生成模拟搜索建议
+    function generateMockSuggestions(query) {
+        const mockSuggestions = [
+            { title: `${query} 教程`, type: 'article', count: 5 },
+            { title: `${query} 工具`, type: 'article', count: 3 },
+            { title: `${query} 实战`, type: 'article', count: 8 },
+            { title: `如何使用 ${query}`, type: 'article', count: 2 },
+            { title: `${query} 最佳实践`, type: 'article', count: 4 }
+        ];
+
+        return mockSuggestions.slice(0, 5);
+    }
+
+    // 显示搜索建议
+    function displaySuggestions(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        suggestionsList.innerHTML = '';
+        currentSuggestionIndex = -1;
+
+        suggestions.forEach((suggestion, index) => {
+            const li = document.createElement('li');
+            li.className = 'suggestion-item';
+            li.setAttribute('role', 'option');
+            li.setAttribute('tabindex', '-1');
+            li.innerHTML = `
+                <div class="suggestion-content">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </div>
+                    <div class="suggestion-text">
+                        <div class="suggestion-title">${escapeHtml(suggestion.title)}</div>
+                        <div class="suggestion-meta">${suggestion.count} 个结果</div>
+                    </div>
+                    <div class="suggestion-action">
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </div>
+                </div>
+            `;
+
+            suggestionsList.appendChild(li);
+        });
+
+        searchSuggestions.style.display = 'block';
+    }
+
+    // 隐藏搜索建议
+    function hideSuggestions() {
+        if (searchSuggestions) {
+            searchSuggestions.style.display = 'none';
+            currentSuggestionIndex = -1;
+        }
+    }
+
+    // 导航搜索建议
+    function navigateSuggestions(direction) {
+        const suggestions = suggestionsList.querySelectorAll('.suggestion-item');
+        if (suggestions.length === 0) return;
+
+        // 移除当前选中
+        if (currentSuggestionIndex >= 0) {
+            suggestions[currentSuggestionIndex].setAttribute('aria-selected', 'false');
+        }
+
+        // 计算新索引
+        currentSuggestionIndex += direction;
+        if (currentSuggestionIndex < 0) {
+            currentSuggestionIndex = suggestions.length - 1;
+        } else if (currentSuggestionIndex >= suggestions.length) {
+            currentSuggestionIndex = 0;
+        }
+
+        // 设置新选中
+        suggestions[currentSuggestionIndex].setAttribute('aria-selected', 'true');
+        suggestions[currentSuggestionIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    // 选择搜索建议
+    function selectSuggestion(index) {
+        const suggestions = suggestionsList.querySelectorAll('.suggestion-item');
+        if (index >= 0 && index < suggestions.length) {
+            const suggestion = suggestions[index];
+            const title = suggestion.querySelector('.suggestion-title').textContent;
+
+            searchInput.value = title;
+            hideSuggestions();
+
+            // 执行搜索
+            searchForm.submit();
+        }
+    }
+
+    // 高级搜索功能
+    function initAdvancedSearch() {
+        const advancedToggle = document.querySelector('.search-advanced-toggle');
+        const advancedOptions = document.querySelector('.search-advanced');
+
+        if (!advancedToggle || !advancedOptions) return;
+
+        advancedToggle.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+
+            this.setAttribute('aria-expanded', newState.toString());
+            advancedOptions.style.display = newState ? 'block' : 'none';
+
+            // 保存状态
+            localStorage.setItem('search-advanced-expanded', newState.toString());
+        });
+
+        // 恢复状态
+        const savedState = localStorage.getItem('search-advanced-expanded');
+        if (savedState === 'true') {
+            advancedToggle.click();
+        }
+    }
+
+    // 热门关键词功能
+    function initHotKeywords() {
+        const hotKeywords = document.querySelectorAll('.hot-keyword');
+
+        hotKeywords.forEach(keyword => {
+            keyword.addEventListener('click', function(e) {
+                e.preventDefault();
+                const keywordText = this.getAttribute('data-keyword');
+
+                searchInput.value = keywordText;
+                searchForm.submit();
+
+                // 统计点击
+                trackSearchEvent('hot_keyword_click', keywordText);
+            });
+        });
+    }
+
+    // 快速搜索功能
+    function initQuickSearch() {
+        const quickSearchBtns = document.querySelectorAll('.quick-search-btn');
+
+        quickSearchBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const query = this.getAttribute('data-query');
+
+                searchInput.value = query;
+                searchForm.submit();
+
+                // 统计点击
+                trackSearchEvent('quick_search_click', query);
+            });
+        });
+    }
+
+    // 搜索历史功能
+    function initSearchHistory() {
+        const historyContainer = document.querySelector('.search-history');
+        const historyList = document.querySelector('.history-list');
+        const historyClearBtn = document.querySelector('.history-clear-btn');
+
+        if (!historyContainer) return;
+
+        // 显示搜索历史
+        function displaySearchHistory() {
+            const history = getSearchHistory();
+
+            if (history.length === 0) {
+                historyContainer.style.display = 'none';
+                return;
+            }
+
+            historyList.innerHTML = '';
+
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <a href="/search?q=${encodeURIComponent(item.query)}" class="history-link">
+                        <span>${escapeHtml(item.query)}</span>
+                        <small>${formatDate(item.timestamp)}</small>
+                    </a>
+                `;
+                historyList.appendChild(li);
+            });
+
+            historyContainer.style.display = 'block';
+        }
+
+        // 清除搜索历史
+        if (historyClearBtn) {
+            historyClearBtn.addEventListener('click', function() {
+                localStorage.removeItem('searchHistory');
+                historyContainer.style.display = 'none';
+            });
+        }
+
+        // 搜索时保存历史
+        searchForm.addEventListener('submit', function() {
+            const query = searchInput.value.trim();
+            if (query) {
+                saveSearchHistory(query);
+            }
+        });
+
+        // 初始显示历史
+        displaySearchHistory();
+
+        // 输入框获取焦点时显示历史
+        searchInput.addEventListener('focus', function() {
+            if (!this.value.trim()) {
+                displaySearchHistory();
+            }
+        });
+    }
+
+    // 获取搜索历史
+    function getSearchHistory() {
+        try {
+            const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            return history.slice(0, 5); // 只显示最近5条
+        } catch {
+            return [];
+        }
+    }
+
+    // 保存搜索历史
+    function saveSearchHistory(query) {
+        try {
+            let history = getSearchHistory();
+
+            // 移除重复项
+            history = history.filter(item => item.query !== query);
+
+            // 添加到开头
+            history.unshift({
+                query,
+                timestamp: Date.now()
+            });
+
+            // 限制数量
+            history = history.slice(0, 10);
+
+            localStorage.setItem('searchHistory', JSON.stringify(history));
+        } catch (error) {
+            console.error('Failed to save search history:', error);
+        }
+    }
+
+    // 搜索事件统计
+    function trackSearchEvent(eventName, query) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', eventName, {
+                'search_term': query,
+                'event_category': 'search_widget'
+            });
+        }
+    }
+
+    // 工具函数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return '今天';
+        if (diffDays === 1) return '昨天';
+        if (diffDays < 7) return `${diffDays}天前`;
+
+        return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+    }
+
+    // 初始化所有功能
+    function init() {
+        initSearchWidget();
+    }
+
+    // DOM加载完成后初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

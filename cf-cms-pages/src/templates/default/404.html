@@ -1,0 +1,320 @@
+{{extends "base"}}
+
+{{! 404错误页面模板 }}
+
+<main class="error-page error-404">
+    <div class="error-container">
+        <!-- 错误图标/插图 -->
+        <div class="error-visual">
+            <div class="error-code">404</div>
+            <div class="error-illustration">
+                <!-- 可以放置SVG插图或图片 -->
+                <svg viewBox="0 0 400 300" class="error-svg">
+                    <!-- 简单的404插图 -->
+                    <circle cx="200" cy="150" r="80" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="2"/>
+                    <path d="M160 130 L240 170 M240 130 L160 170" stroke="#6b7280" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="180" cy="140" r="4" fill="#ef4444"/>
+                    <circle cx="220" cy="140" r="4" fill="#ef4444"/>
+                    <path d="M180 180 Q200 200 220 180" stroke="#6b7280" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 错误信息 -->
+        <div class="error-content">
+            <h1 class="error-title">页面走丢了</h1>
+            <p class="error-description">
+                抱歉，您访问的页面不存在或已被移除。
+                <br>
+                可能是链接地址有误，或者页面已经被删除。
+            </p>
+
+            <!-- 错误详情 -->
+            <div class="error-details">
+                <div class="detail-item">
+                    <span class="detail-label">请求地址:</span>
+                    <span class="detail-value">{{url.current}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">错误时间:</span>
+                    <span class="detail-value">{{formatDate 'now' 'YYYY-MM-DD HH:mm:ss'}}</span>
+                </div>
+                {{#if request.referer}}
+                <div class="detail-item">
+                    <span class="detail-label">来源页面:</span>
+                    <span class="detail-value">{{request.referer}}</span>
+                </div>
+                {{/if}}
+            </div>
+
+            <!-- 操作建议 -->
+            <div class="error-suggestions">
+                <h3 class="suggestions-title">您可以尝试:</h3>
+                <ul class="suggestions-list">
+                    <li>检查网址是否输入正确</li>
+                    <li>返回上一页重新操作</li>
+                    <li>使用搜索功能查找内容</li>
+                    <li>访问网站首页浏览最新内容</li>
+                </ul>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="error-actions">
+                <button onclick="history.back()" class="btn btn-outline">
+                    ← 返回上页
+                </button>
+                <a href="/" class="btn btn-primary">
+                    🏠 回到首页
+                </a>
+                <a href="/search" class="btn btn-outline">
+                    🔍 搜索内容
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐内容 -->
+    {{#if recommendedContent}}
+    <section class="recommended-content">
+        <h2 class="section-title">或许您对这些内容感兴趣</h2>
+        <div class="recommended-grid">
+            {{#each recommendedContent}}
+            <article class="recommended-item">
+                {{#if this.cover_image}}
+                <div class="recommended-image">
+                    <a href="{{this.url}}">
+                        <img src="{{this.cover_image}}" alt="{{this.title}}" loading="lazy">
+                    </a>
+                </div>
+                {{/if}}
+                <div class="recommended-content">
+                    <h3 class="recommended-title">
+                        <a href="{{this.url}}">{{this.title}}</a>
+                    </h3>
+                    {{#if this.summary}}
+                    <p class="recommended-summary">{{truncate this.summary 100}}</p>
+                    {{/if}}
+                    <div class="recommended-meta">
+                        <time datetime="{{this.published_at}}">
+                            {{formatDate this.published_at 'MM-DD'}}
+                        </time>
+                        <span class="view-count">{{this.view_count}} 阅读</span>
+                    </div>
+                </div>
+            </article>
+            {{/each}}
+        </div>
+    </section>
+    {{/if}}
+
+    <!-- 网站导航 -->
+    <section class="site-navigation">
+        <h2 class="section-title">网站导航</h2>
+        <div class="nav-grid">
+            <div class="nav-section">
+                <h3 class="nav-title">内容分类</h3>
+                <ul class="nav-list">
+                    {{#each site.categories}}
+                    <li><a href="/categories/{{this.slug}}">{{this.name}}</a></li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="nav-title">热门标签</h3>
+                <div class="nav-tags">
+                    {{#each site.popularTags}}
+                    <a href="/tags/{{this.slug}}" class="nav-tag">{{this.name}}</a>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="nav-title">最新文章</h3>
+                <ul class="nav-list">
+                    {{#each site.recentArticles}}
+                    <li>
+                        <a href="/articles/{{this.slug}}">
+                            {{truncate this.title 30}}
+                        </a>
+                        <time>{{formatDate this.published_at 'MM-DD'}}</time>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <h3 class="nav-title">快速链接</h3>
+                <ul class="nav-list">
+                    <li><a href="/about">关于我们</a></li>
+                    <li><a href="/contact">联系方式</a></li>
+                    <li><a href="/sitemap">网站地图</a></li>
+                    <li><a href="/rss">RSS订阅</a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 搜索功能 -->
+    {{#if site.config.features.enableSearch}}
+    <section class="search-section">
+        <h2 class="section-title">搜索网站内容</h2>
+        <form class="search-form large" action="/search" method="get" role="search">
+            <div class="search-input-group">
+                <input type="search"
+                       name="q"
+                       placeholder="输入关键词搜索文章、标签或内容..."
+                       aria-label="搜索网站内容"
+                       autocomplete="off">
+                <button type="submit" class="search-btn">
+                    <span class="btn-text">搜索</span>
+                    <span class="btn-icon">🔍</span>
+                </button>
+            </div>
+            <div class="search-suggestions">
+                <span class="suggestion-label">热门搜索:</span>
+                {{#each site.popularSearches}}
+                <button type="button"
+                        class="suggestion-tag"
+                        onclick="document.querySelector('input[name=q]').value='{{this}}'; document.querySelector('.search-form').submit()">
+                    {{this}}
+                </button>
+                {{/each}}
+            </div>
+        </form>
+    </section>
+    {{/if}}
+
+    <!-- 联系方式 -->
+    {{#if site.config.contact}}
+    <section class="contact-section">
+        <h2 class="section-title">遇到问题？联系我们</h2>
+        <div class="contact-grid">
+            {{#if site.config.contact.email}}
+            <div class="contact-item">
+                <div class="contact-icon">📧</div>
+                <div class="contact-content">
+                    <h3>邮箱联系</h3>
+                    <a href="mailto:{{site.config.contact.email}}">{{site.config.contact.email}}</a>
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if site.config.contact.wechat}}
+            <div class="contact-item">
+                <div class="contact-icon">💬</div>
+                <div class="contact-content">
+                    <h3>微信客服</h3>
+                    <span>{{site.config.contact.wechat}}</span>
+                </div>
+            </div>
+            {{/if}}
+
+            {{#if site.config.contact.phone}}
+            <div class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div class="contact-content">
+                    <h3>电话咨询</h3>
+                    <a href="tel:{{site.config.contact.phone}}">{{site.config.contact.phone}}</a>
+                </div>
+            </div>
+            {{/if}}
+
+            <div class="contact-item">
+                <div class="contact-icon">💡</div>
+                <div class="contact-content">
+                    <h3>意见反馈</h3>
+                    <a href="/feedback">提交反馈</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    {{/if}}
+</main>
+
+<!-- 错误上报 -->
+<script>
+// 自动上报404错误
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'page_not_found', {
+        'page_location': window.location.href,
+        'page_referrer': document.referrer || 'direct'
+    })
+}
+
+// 记录404错误到本地
+try {
+    const errorLog = {
+        url: window.location.href,
+        referrer: document.referrer,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString()
+    }
+
+    // 发送到错误收集API
+    fetch('/api/errors/404', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(errorLog)
+    }).catch(() => {
+        // 忽略上报失败
+    })
+} catch (e) {
+    // 忽略错误
+}
+
+// 自动建议功能
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname
+    const suggestions = []
+
+    // 基于路径生成可能的建议
+    if (currentPath.includes('/article/') || currentPath.includes('/post/')) {
+        suggestions.push({
+            text: '查看所有文章',
+            url: '/articles'
+        })
+    }
+
+    if (currentPath.includes('/tag/')) {
+        suggestions.push({
+            text: '浏览标签列表',
+            url: '/tags'
+        })
+    }
+
+    // 显示建议
+    if (suggestions.length > 0) {
+        const actionsDiv = document.querySelector('.error-actions')
+        suggestions.forEach(suggestion => {
+            const link = document.createElement('a')
+            link.href = suggestion.url
+            link.className = 'btn btn-outline'
+            link.textContent = suggestion.text
+            actionsDiv.appendChild(link)
+        })
+    }
+})
+</script>
+
+<!-- 404页面结构化数据 -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "页面未找到 - {{site.name}}",
+    "description": "请求的页面不存在或已被移除",
+    "url": "{{url.current}}",
+    "mainEntity": {
+        "@type": "Thing",
+        "name": "404错误"
+    },
+    "isPartOf": {
+        "@type": "WebSite",
+        "name": "{{site.name}}",
+        "url": "{{url.base}}"
+    }
+}
+</script>

@@ -19,6 +19,30 @@ export function successResponse<T>(
   return c.json(response, statusCode)
 }
 
+// Error response helper
+export function errorResponse(
+  c: Context,
+  code: string,
+  message: string,
+  details?: any,
+  statusCode = 500
+): Response {
+  const response: ApiResponse = {
+    success: false,
+    error: {
+      code,
+      message,
+      ...(details && { details })
+    },
+    meta: {
+      timestamp: new Date().toISOString(),
+      version: '1.0.0'
+    }
+  }
+
+  return c.json(response, statusCode)
+}
+
 // Paginated response helper
 export function paginatedResponse<T>(
   c: Context,

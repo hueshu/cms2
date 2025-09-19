@@ -1,0 +1,251 @@
+{{extends "base"}}
+
+{{! 首页模板 - 显示最新文章和推荐内容 }}
+
+<!-- 英雄区域 -->
+{{#if site.config.hero}}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">{{site.config.hero.title}}</h1>
+        {{#if site.config.hero.subtitle}}
+        <p class="hero-subtitle">{{site.config.hero.subtitle}}</p>
+        {{/if}}
+        {{#if site.config.hero.cta}}
+        <div class="hero-cta">
+            <a href="{{site.config.hero.cta.url}}" class="btn btn-primary">
+                {{site.config.hero.cta.text}}
+            </a>
+        </div>
+        {{/if}}
+    </div>
+    {{#if site.config.hero.backgroundImage}}
+    <div class="hero-background">
+        <img src="{{site.config.hero.backgroundImage}}" alt="{{site.config.hero.title}}" loading="lazy">
+    </div>
+    {{/if}}
+</section>
+{{/if}}
+
+<!-- 特色文章 -->
+{{#if featuredArticles}}
+<section class="featured-articles">
+    <div class="section-header">
+        <h2 class="section-title">特色推荐</h2>
+        <p class="section-description">精选优质内容，值得一读</p>
+    </div>
+
+    <div class="featured-grid">
+        {{#each featuredArticles}}
+        <article class="featured-card">
+            {{#if this.cover_image}}
+            <div class="card-image">
+                <a href="/articles/{{this.slug}}">
+                    <img src="{{this.cover_image}}" alt="{{this.title}}" loading="lazy">
+                </a>
+            </div>
+            {{/if}}
+
+            <div class="card-content">
+                <header class="card-header">
+                    <h3 class="card-title">
+                        <a href="/articles/{{this.slug}}">{{this.title}}</a>
+                    </h3>
+                    <div class="card-meta">
+                        <time datetime="{{this.published_at}}" class="publish-date">
+                            {{formatDate this.published_at 'YYYY-MM-DD'}}
+                        </time>
+                        {{#if this.author}}
+                        <span class="author">{{this.author}}</span>
+                        {{/if}}
+                        <span class="read-time">{{readingTime}}</span>
+                    </div>
+                </header>
+
+                {{#if this.summary}}
+                <div class="card-excerpt">
+                    <p>{{truncate this.summary 120}}</p>
+                </div>
+                {{/if}}
+
+                {{#if this.tags}}
+                <footer class="card-footer">
+                    <div class="card-tags">
+                        {{#each this.tags}}
+                        <a href="/tags/{{this.slug}}" class="tag">{{this.name}}</a>
+                        {{/each}}
+                    </div>
+                </footer>
+                {{/if}}
+            </div>
+        </article>
+        {{/each}}
+    </div>
+</section>
+{{/if}}
+
+<!-- 最新文章 -->
+<section class="latest-articles">
+    <div class="section-header">
+        <h2 class="section-title">最新文章</h2>
+        <p class="section-description">最近发布的内容</p>
+    </div>
+
+    {{#if articles}}
+    <div class="articles-grid">
+        {{#each articles}}
+        <article class="article-card">
+            {{#if this.cover_image}}
+            <div class="card-image">
+                <a href="/articles/{{this.slug}}">
+                    <img src="{{this.cover_image}}" alt="{{this.title}}" loading="lazy">
+                </a>
+            </div>
+            {{/if}}
+
+            <div class="card-content">
+                <header class="card-header">
+                    <h3 class="card-title">
+                        <a href="/articles/{{this.slug}}">{{this.title}}</a>
+                    </h3>
+                    <div class="card-meta">
+                        <time datetime="{{this.published_at}}" class="publish-date">
+                            {{timeAgo this.published_at}}
+                        </time>
+                        {{#if this.author}}
+                        <span class="author">作者: {{this.author}}</span>
+                        {{/if}}
+                        <span class="view-count">{{this.view_count}} 次阅读</span>
+                    </div>
+                </header>
+
+                {{#if this.summary}}
+                <div class="card-excerpt">
+                    <p>{{truncate this.summary 150}}</p>
+                </div>
+                {{/if}}
+
+                {{#if this.tags}}
+                <footer class="card-footer">
+                    <div class="card-tags">
+                        {{tagList this 'tag'}}
+                    </div>
+                    <div class="card-actions">
+                        <a href="/articles/{{this.slug}}" class="read-more">阅读更多</a>
+                    </div>
+                </footer>
+                {{/if}}
+            </div>
+        </article>
+        {{/each}}
+    </div>
+
+    <!-- 分页 -->
+    {{#if pagination}}
+    <div class="pagination-wrapper">
+        {{{pagination pagination.current pagination.total '/'}}}
+    </div>
+    {{/if}}
+
+    <!-- 查看更多 -->
+    <div class="section-footer">
+        <a href="/articles" class="btn btn-outline">查看全部文章</a>
+    </div>
+    {{else}}
+    <div class="no-content">
+        <p>暂无文章内容</p>
+        <a href="/admin" class="btn btn-primary">开始创作</a>
+    </div>
+    {{/if}}
+</section>
+
+<!-- 标签云 -->
+{{#if tags}}
+<section class="tag-cloud-section">
+    <div class="section-header">
+        <h2 class="section-title">热门标签</h2>
+    </div>
+
+    <div class="tag-cloud">
+        {{#each tags}}
+        <a href="/tags/{{this.slug}}"
+           class="tag-link"
+           style="font-size: {{multiply this.weight 100}}%"
+           title="{{this.count}} 篇文章">
+            {{this.name}}
+        </a>
+        {{/each}}
+    </div>
+</section>
+{{/if}}
+
+<!-- 统计信息 -->
+{{#if stats}}
+<section class="site-stats">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number">{{stats.totalArticles}}</div>
+            <div class="stat-label">文章总数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{stats.totalTags}}</div>
+            <div class="stat-label">标签数量</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{stats.totalViews}}</div>
+            <div class="stat-label">总阅读量</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{formatDate stats.lastUpdate 'MM-DD'}}</div>
+            <div class="stat-label">最后更新</div>
+        </div>
+    </div>
+</section>
+{{/if}}
+
+<!-- 友情链接 -->
+{{#if site.config.friendLinks}}
+<section class="friend-links">
+    <div class="section-header">
+        <h2 class="section-title">友情链接</h2>
+    </div>
+
+    <div class="links-grid">
+        {{#each site.config.friendLinks}}
+        <a href="{{this.url}}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-item"
+           title="{{this.description}}">
+            {{#if this.logo}}
+            <img src="{{this.logo}}" alt="{{this.name}}" class="link-logo">
+            {{/if}}
+            <span class="link-name">{{this.name}}</span>
+        </a>
+        {{/each}}
+    </div>
+</section>
+{{/if}}
+
+<!-- 订阅区域 -->
+{{#if site.config.newsletter}}
+<section class="newsletter-section">
+    <div class="newsletter-content">
+        <h2 class="newsletter-title">{{site.config.newsletter.title}}</h2>
+        <p class="newsletter-description">{{site.config.newsletter.description}}</p>
+
+        <form class="newsletter-form" action="/api/subscribe" method="post">
+            <div class="form-group">
+                <input type="email"
+                       name="email"
+                       placeholder="输入你的邮箱地址"
+                       required
+                       aria-label="邮箱地址">
+                <button type="submit" class="btn btn-primary">订阅</button>
+            </div>
+            <p class="newsletter-note">
+                订阅后将收到最新文章推送，我们承诺不会发送垃圾邮件。
+            </p>
+        </form>
+    </div>
+</section>
+{{/if}}

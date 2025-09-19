@@ -1,0 +1,1219 @@
+{{! 社交媒体链接小工具模板 }}
+
+<div class="sidebar-widget social-links-widget" data-widget-id="social-links">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-share-alt" aria-hidden="true"></i>
+            {{widget.title}}
+        </h3>
+        {{#if widget.settings.showToggle}}
+        <button type="button"
+                class="widget-toggle-btn"
+                aria-label="展开/收起社交链接"
+                aria-expanded="true"
+                data-target="social-links-content">
+            <i class="fas fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="widget-content" id="social-links-content">
+        {{#if widget.data.hasLinks}}
+
+        <div class="social-links-container {{widget.data.style}}"
+             role="list"
+             aria-label="社交媒体链接">
+
+            {{#each widget.data.links}}
+            <a href="{{this.url}}"
+               target="{{../widget.data.target}}"
+               rel="noopener noreferrer"
+               class="social-link {{this.platform}}"
+               title="{{this.name}}"
+               aria-label="{{this.ariaLabel}}"
+               data-platform="{{this.platform}}"
+               role="listitem"
+               tabindex="0">
+
+                {{#if this.iconClass}}
+                <i class="{{this.iconClass}} social-icon" aria-hidden="true"></i>
+                {{else}}
+                <span class="social-icon-fallback">{{substring this.platform 0 1}}</span>
+                {{/if}}
+
+                {{#if ../widget.data.showLabels}}
+                <span class="social-label">{{this.name}}</span>
+                {{/if}}
+
+                {{#if ../widget.settings.showFollowerCount}}
+                {{#if this.followerCount}}
+                <span class="social-count">{{formatNumber this.followerCount}}</span>
+                {{/if}}
+                {{/if}}
+
+                {{#if ../widget.settings.showHoverEffect}}
+                <div class="social-hover-overlay">
+                    <span class="hover-text">关注我</span>
+                </div>
+                {{/if}}
+            </a>
+            {{/each}}
+        </div>
+
+        {{#if widget.settings.showDescription}}
+        <div class="social-description">
+            <p class="description-text">
+                {{#if widget.description}}
+                {{widget.description}}
+                {{else}}
+                关注我们的社交媒体账号，获取最新动态和精彩内容！
+                {{/if}}
+            </p>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showQRCode}}
+        <div class="social-qr-section">
+            <button type="button"
+                    class="qr-toggle-btn"
+                    aria-label="显示/隐藏二维码"
+                    aria-expanded="false"
+                    data-target="qr-codes">
+                <i class="fas fa-qrcode" aria-hidden="true"></i>
+                <span>扫码关注</span>
+                <i class="fas fa-chevron-down toggle-icon" aria-hidden="true"></i>
+            </button>
+
+            <div class="qr-codes" id="qr-codes" style="display: none;">
+                {{#each widget.data.links}}
+                {{#if this.qrCode}}
+                <div class="qr-item">
+                    <div class="qr-image">
+                        <img src="{{this.qrCode}}"
+                             alt="{{this.name}} 二维码"
+                             loading="lazy">
+                    </div>
+                    <div class="qr-label">{{this.name}}</div>
+                </div>
+                {{/if}}
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+
+        {{#if widget.settings.showStats}}
+        <div class="social-stats">
+            <div class="stats-header">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>社交数据</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.links.length}}</span>
+                    <span class="stat-label">平台</span>
+                </div>
+                {{#if widget.data.totalFollowers}}
+                <div class="stat-item">
+                    <span class="stat-value">{{formatNumber widget.data.totalFollowers}}</span>
+                    <span class="stat-label">关注者</span>
+                </div>
+                {{/if}}
+                <div class="stat-item">
+                    <span class="stat-value">{{widget.data.totalClicks}}</span>
+                    <span class="stat-label">点击量</span>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
+        {{else}}
+        <div class="widget-empty">
+            <i class="far fa-heart empty-icon" aria-hidden="true"></i>
+            <p class="empty-text">暂无社交链接</p>
+            {{#if widget.settings.showAddLink}}
+            <a href="/admin/social-links" class="empty-action">添加社交链接</a>
+            {{/if}}
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if widget.settings.showRefresh}}
+    <div class="widget-actions">
+        <button type="button"
+                class="widget-refresh-btn"
+                data-widget="social-links"
+                title="刷新社交链接"
+                aria-label="刷新社交链接">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{/if}}
+</div>
+
+{{! 分享当前页面模板 }}
+{{#if widget.settings.enablePageShare}}
+<div class="sidebar-widget page-share-widget" data-widget-id="page-share">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-share" aria-hidden="true"></i>
+            分享本页
+        </h3>
+    </div>
+
+    <div class="widget-content">
+        <div class="share-buttons">
+            <button type="button"
+                    class="share-btn weibo"
+                    data-platform="weibo"
+                    title="分享到微博">
+                <i class="fab fa-weibo" aria-hidden="true"></i>
+                <span>微博</span>
+            </button>
+
+            <button type="button"
+                    class="share-btn wechat"
+                    data-platform="wechat"
+                    title="分享到微信">
+                <i class="fab fa-weixin" aria-hidden="true"></i>
+                <span>微信</span>
+            </button>
+
+            <button type="button"
+                    class="share-btn qq"
+                    data-platform="qq"
+                    title="分享到QQ">
+                <i class="fab fa-qq" aria-hidden="true"></i>
+                <span>QQ</span>
+            </button>
+
+            <button type="button"
+                    class="share-btn copy"
+                    data-platform="copy"
+                    title="复制链接">
+                <i class="fas fa-copy" aria-hidden="true"></i>
+                <span>复制链接</span>
+            </button>
+        </div>
+
+        <div class="share-url-section" style="display: none;">
+            <div class="share-url-group">
+                <input type="text"
+                       class="share-url-input"
+                       readonly
+                       aria-label="分享链接">
+                <button type="button"
+                        class="copy-url-btn"
+                        title="复制链接">
+                    <i class="fas fa-copy" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{{/if}}
+
+<style>
+/* 社交链接小工具样式 */
+.social-links-widget {
+    --primary-color: #3b82f6;
+    --secondary-color: #6b7280;
+    --text-color: #374151;
+    --border-color: #e5e7eb;
+    --bg-hover: #f9fafb;
+    --bg-focus: #eff6ff;
+    --meta-color: #6b7280;
+    --success-color: #10b981;
+
+    /* 社交平台品牌色 */
+    --weibo-color: #e6162d;
+    --wechat-color: #1aad19;
+    --qq-color: #12b7f5;
+    --github-color: #333;
+    --twitter-color: #1da1f2;
+    --facebook-color: #1877f2;
+    --instagram-color: #e4405f;
+    --linkedin-color: #0077b5;
+    --youtube-color: #ff0000;
+    --bilibili-color: #fb7299;
+    --zhihu-color: #0084ff;
+    --douyin-color: #fe2c55;
+}
+
+.social-links-widget .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.social-links-widget .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.social-links-widget .widget-icon {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.widget-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.widget-toggle-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-hover);
+}
+
+.widget-toggle-btn i {
+    transition: transform 0.2s ease;
+}
+
+.widget-toggle-btn[aria-expanded="false"] i {
+    transform: rotate(180deg);
+}
+
+/* 社交链接容器样式 */
+.social-links-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* 仅图标样式 */
+.social-links-container.icon {
+    justify-content: center;
+}
+
+.social-links-container.icon .social-link {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 文字样式 */
+.social-links-container.text .social-link {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-hover);
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+/* 图标+文字样式 */
+.social-links-container.both .social-link {
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-hover);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+    transition: all 0.2s ease;
+}
+
+/* 社交链接基础样式 */
+.social-link {
+    text-decoration: none;
+    color: var(--text-color);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.social-link:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.social-icon {
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.social-icon-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.2rem;
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.social-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.social-count {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    margin-left: auto;
+}
+
+/* 悬停覆盖层 */
+.social-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.social-link:hover .social-hover-overlay {
+    opacity: 1;
+}
+
+/* 平台特定样式 */
+.social-link.weibo { background-color: var(--weibo-color); color: white; }
+.social-link.wechat { background-color: var(--wechat-color); color: white; }
+.social-link.qq { background-color: var(--qq-color); color: white; }
+.social-link.github { background-color: var(--github-color); color: white; }
+.social-link.twitter { background-color: var(--twitter-color); color: white; }
+.social-link.facebook { background-color: var(--facebook-color); color: white; }
+.social-link.instagram { background-color: var(--instagram-color); color: white; }
+.social-link.linkedin { background-color: var(--linkedin-color); color: white; }
+.social-link.youtube { background-color: var(--youtube-color); color: white; }
+.social-link.bilibili { background-color: var(--bilibili-color); color: white; }
+.social-link.zhihu { background-color: var(--zhihu-color); color: white; }
+.social-link.douyin { background-color: var(--douyin-color); color: white; }
+
+/* 悬停效果 */
+.social-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.social-links-container.icon .social-link:hover {
+    transform: translateY(-3px) scale(1.1);
+}
+
+.social-links-container.text .social-link:hover,
+.social-links-container.both .social-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 社交描述 */
+.social-description {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-hover);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.description-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+/* 二维码部分 */
+.social-qr-section {
+    margin-bottom: 1rem;
+}
+
+.qr-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.qr-toggle-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--primary-color);
+}
+
+.toggle-icon {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.qr-toggle-btn[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.qr-codes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-hover);
+    border-radius: 0.375rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.qr-item {
+    text-align: center;
+}
+
+.qr-image {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 0.5rem;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.qr-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qr-label {
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    font-weight: 500;
+}
+
+/* 社交统计 */
+.social-stats {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-hover);
+    border-radius: 0.5rem;
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    margin-top: 0.25rem;
+}
+
+/* 空状态样式 */
+.widget-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--meta-color);
+}
+
+.empty-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.empty-action {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.empty-action:hover {
+    background-color: #2563eb;
+}
+
+.widget-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.widget-refresh-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--meta-color);
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-refresh-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.widget-refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* 页面分享小工具样式 */
+.page-share-widget {
+    margin-top: 1.5rem;
+}
+
+.share-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: var(--bg-hover);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.share-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.share-btn.weibo:hover { background-color: var(--weibo-color); border-color: var(--weibo-color); }
+.share-btn.wechat:hover { background-color: var(--wechat-color); border-color: var(--wechat-color); }
+.share-btn.qq:hover { background-color: var(--qq-color); border-color: var(--qq-color); }
+
+.share-url-section {
+    margin-top: 1rem;
+}
+
+.share-url-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.share-url-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background-color: var(--bg-hover);
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+.copy-url-btn {
+    padding: 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.copy-url-btn:hover {
+    background-color: #2563eb;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .social-links-container.both {
+        flex-direction: column;
+    }
+
+    .social-links-container.both .social-link {
+        flex: none;
+    }
+
+    .qr-codes {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    }
+
+    .qr-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .share-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .social-links-widget {
+        --text-color: #f3f4f6;
+        --border-color: #374151;
+        --bg-hover: #1f2937;
+        --bg-focus: #1e3a8a;
+        --meta-color: #9ca3af;
+    }
+
+    .social-count {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    .share-url-input {
+        background-color: #374151;
+        color: #f3f4f6;
+        border-color: #4b5563;
+    }
+
+    .widget-refresh-btn {
+        border-color: #374151;
+    }
+}
+
+/* 无障碍访问增强 */
+@media (prefers-reduced-motion: reduce) {
+    .social-link,
+    .share-btn,
+    .widget-refresh-btn,
+    .qr-toggle-btn,
+    .toggle-icon,
+    .social-hover-overlay {
+        transition: none;
+    }
+
+    .social-link:hover {
+        transform: none;
+    }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+    .social-link {
+        border: 2px solid currentColor;
+    }
+
+    .share-btn {
+        border-width: 2px;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .widget-actions,
+    .widget-toggle-btn,
+    .qr-toggle-btn,
+    .page-share-widget {
+        display: none;
+    }
+
+    .social-links-widget {
+        break-inside: avoid;
+    }
+
+    .social-link {
+        color: black !important;
+        background: none !important;
+        border: 1px solid black !important;
+    }
+}
+</style>
+
+<script>
+// 社交链接小工具交互功能
+(function() {
+    'use strict';
+
+    // 初始化社交链接小工具
+    function initSocialLinksWidget() {
+        initToggleFunction();
+        initQRCodeToggle();
+        initSocialTracking();
+        initPageSharing();
+        initHoverEffects();
+    }
+
+    // 折叠/展开功能
+    function initToggleFunction() {
+        const toggleBtn = document.querySelector('.widget-toggle-btn');
+        const targetId = toggleBtn?.getAttribute('data-target');
+        const targetElement = targetId ? document.getElementById(targetId) : null;
+
+        if (!toggleBtn || !targetElement) return;
+
+        toggleBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+
+            this.setAttribute('aria-expanded', newState.toString());
+
+            if (newState) {
+                targetElement.style.display = 'block';
+                targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+            } else {
+                targetElement.style.maxHeight = '0';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 300);
+            }
+
+            // 保存状态
+            localStorage.setItem('social-links-widget-expanded', newState.toString());
+        });
+
+        // 恢复状态
+        const savedState = localStorage.getItem('social-links-widget-expanded');
+        if (savedState === 'false') {
+            toggleBtn.click();
+        }
+    }
+
+    // 二维码展开/收起
+    function initQRCodeToggle() {
+        const qrToggleBtn = document.querySelector('.qr-toggle-btn');
+        const targetId = qrToggleBtn?.getAttribute('data-target');
+        const targetElement = targetId ? document.getElementById(targetId) : null;
+
+        if (!qrToggleBtn || !targetElement) return;
+
+        qrToggleBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const newState = !isExpanded;
+
+            this.setAttribute('aria-expanded', newState.toString());
+
+            if (newState) {
+                targetElement.style.display = 'grid';
+                targetElement.style.maxHeight = '0';
+                requestAnimationFrame(() => {
+                    targetElement.style.maxHeight = targetElement.scrollHeight + 'px';
+                });
+            } else {
+                targetElement.style.maxHeight = '0';
+                setTimeout(() => {
+                    targetElement.style.display = 'none';
+                }, 300);
+            }
+
+            // 统计
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'qr_code_toggle', {
+                    'expanded': newState,
+                    'event_category': 'social_widget'
+                });
+            }
+        });
+    }
+
+    // 社交链接点击统计
+    function initSocialTracking() {
+        const socialLinks = document.querySelectorAll('.social-link');
+
+        socialLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const platform = this.getAttribute('data-platform');
+                const url = this.getAttribute('href');
+
+                // 发送统计数据
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'social_click', {
+                        'platform': platform,
+                        'url': url,
+                        'event_category': 'social_widget'
+                    });
+                }
+
+                // 本地存储点击记录
+                recordSocialClick(platform);
+
+                // 特殊处理微信等需要特殊分享方式的平台
+                if (platform === 'wechat') {
+                    e.preventDefault();
+                    showWechatShareModal();
+                }
+            });
+        });
+    }
+
+    // 记录社交点击
+    function recordSocialClick(platform) {
+        try {
+            const clicks = JSON.parse(localStorage.getItem('socialClicks') || '{}');
+            clicks[platform] = (clicks[platform] || 0) + 1;
+            localStorage.setItem('socialClicks', JSON.stringify(clicks));
+
+            // 更新显示的点击数据
+            updateClickStats();
+        } catch (error) {
+            console.error('Failed to record social click:', error);
+        }
+    }
+
+    // 更新点击统计
+    function updateClickStats() {
+        const totalClicksElement = document.querySelector('.stat-item .stat-value');
+        if (!totalClicksElement) return;
+
+        try {
+            const clicks = JSON.parse(localStorage.getItem('socialClicks') || '{}');
+            const totalClicks = Object.values(clicks).reduce((sum, count) => sum + count, 0);
+
+            // 动画更新数字
+            animateNumber(totalClicksElement, parseInt(totalClicksElement.textContent) || 0, totalClicks, 1000);
+        } catch (error) {
+            console.error('Failed to update click stats:', error);
+        }
+    }
+
+    // 页面分享功能
+    function initPageSharing() {
+        const shareButtons = document.querySelectorAll('.share-btn');
+        const shareUrlSection = document.querySelector('.share-url-section');
+        const shareUrlInput = document.querySelector('.share-url-input');
+        const copyUrlBtn = document.querySelector('.copy-url-btn');
+
+        shareButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const platform = this.getAttribute('data-platform');
+                const currentUrl = window.location.href;
+                const pageTitle = document.title;
+
+                switch(platform) {
+                    case 'weibo':
+                        shareToWeibo(currentUrl, pageTitle);
+                        break;
+                    case 'wechat':
+                        showWechatShareModal();
+                        break;
+                    case 'qq':
+                        shareToQQ(currentUrl, pageTitle);
+                        break;
+                    case 'copy':
+                        showShareUrl(currentUrl);
+                        break;
+                }
+
+                // 统计分享
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'page_share', {
+                        'platform': platform,
+                        'url': currentUrl,
+                        'event_category': 'share'
+                    });
+                }
+            });
+        });
+
+        // 复制链接功能
+        if (copyUrlBtn && shareUrlInput) {
+            copyUrlBtn.addEventListener('click', function() {
+                copyToClipboard(shareUrlInput.value);
+            });
+        }
+    }
+
+    // 分享到微博
+    function shareToWeibo(url, title) {
+        const shareUrl = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+
+    // 分享到QQ
+    function shareToQQ(url, title) {
+        const shareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+
+    // 显示微信分享模态框
+    function showWechatShareModal() {
+        // 这里可以显示微信分享二维码或提示
+        alert('请点击右上角菜单，选择"分享到朋友圈"或"发送给朋友"');
+    }
+
+    // 显示分享链接
+    function showShareUrl(url) {
+        const shareUrlSection = document.querySelector('.share-url-section');
+        const shareUrlInput = document.querySelector('.share-url-input');
+
+        if (shareUrlSection && shareUrlInput) {
+            shareUrlInput.value = url;
+            shareUrlSection.style.display = 'block';
+            shareUrlInput.select();
+        }
+    }
+
+    // 复制到剪贴板
+    function copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess();
+            }).catch(err => {
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+        }
+    }
+
+    // 降级复制方案
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showCopySuccess();
+            } else {
+                showCopyError();
+            }
+        } catch (err) {
+            showCopyError();
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    // 显示复制成功提示
+    function showCopySuccess() {
+        showToast('链接已复制到剪贴板', 'success');
+    }
+
+    // 显示复制失败提示
+    function showCopyError() {
+        showToast('复制失败，请手动复制链接', 'error');
+    }
+
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        `;
+        toast.textContent = message;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+
+    // 悬停效果
+    function initHoverEffects() {
+        const socialLinks = document.querySelectorAll('.social-link');
+
+        socialLinks.forEach(link => {
+            // 鼠标进入时的涟漪效果
+            link.addEventListener('mouseenter', function() {
+                createRippleEffect(this);
+            });
+
+            // 焦点处理
+            link.addEventListener('focus', function() {
+                this.style.outline = '2px solid var(--primary-color)';
+                this.style.outlineOffset = '2px';
+            });
+
+            link.addEventListener('blur', function() {
+                this.style.outline = 'none';
+                this.style.outlineOffset = '0';
+            });
+        });
+    }
+
+    // 创建涟漪效果
+    function createRippleEffect(element) {
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.cssText = `
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            width: 100px;
+            height: 100px;
+            left: 50%;
+            top: 50%;
+            margin-left: -50px;
+            margin-top: -50px;
+            pointer-events: none;
+        `;
+
+        element.appendChild(ripple);
+
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    }
+
+    // 数字动画函数
+    function animateNumber(element, start, end, duration) {
+        const startTime = performance.now();
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.round(start + (end - start) * easeOutCubic);
+
+            element.textContent = currentValue.toString();
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    // 添加必要的CSS动画
+    function addAnimationStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 初始化所有功能
+    function init() {
+        initSocialLinksWidget();
+        addAnimationStyles();
+        updateClickStats(); // 初始化时更新统计
+    }
+
+    // DOM加载完成后初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>

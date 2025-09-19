@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性能优化演示 - CF-CMS</title>
+
+    <!-- 资源预加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//api.example.com">
+
+    <!-- 关键CSS内联 -->
+    <style>
+        /* 关键渲染路径CSS */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .loading { opacity: 0; transition: opacity 0.3s ease; }
+        .loaded { opacity: 1; }
+    </style>
+
+    <!-- 非关键CSS懒加载 -->
+    <link rel="preload" href="/css/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/css/main.css"></noscript>
+</head>
+<body>
+    <div class="hero">
+        <h1>CF-CMS 性能优化演示</h1>
+        <p>展示三个Stream的性能优化功能</p>
+    </div>
+
+    <main class="container">
+        <section class="performance-showcase">
+            <h2>Stream A: 缓存系统</h2>
+            <div class="cache-demo">
+                <h3>多层缓存演示</h3>
+                <button id="test-cache">测试缓存性能</button>
+                <div id="cache-results"></div>
+
+                <h3>缓存统计</h3>
+                <div id="cache-stats"></div>
+            </div>
+        </section>
+
+        <section class="query-optimization">
+            <h2>Stream B: 数据库优化</h2>
+            <div class="query-demo">
+                <h3>查询性能测试</h3>
+                <button id="test-queries">测试查询优化</button>
+                <div id="query-results"></div>
+
+                <h3>性能分析</h3>
+                <div id="performance-analysis"></div>
+            </div>
+        </section>
+
+        <section class="lazy-loading">
+            <h2>Stream C: 前端优化</h2>
+
+            <h3>图片懒加载演示</h3>
+            <div class="image-gallery">
+                <!-- 懒加载图片 -->
+                <img data-src="https://via.placeholder.com/300x200/667eea/white?text=Image+1"
+                     class="lazy-image loading"
+                     alt="演示图片1"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E加载中...%3C/text%3E%3C/svg%3E">
+
+                <img data-src="https://via.placeholder.com/300x200/764ba2/white?text=Image+2"
+                     class="lazy-image loading"
+                     alt="演示图片2"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E加载中...%3C/text%3E%3C/svg%3E">
+
+                <img data-src="https://via.placeholder.com/300x200/f093fb/white?text=Image+3"
+                     class="lazy-image loading"
+                     alt="演示图片3"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E加载中...%3C/text%3E%3C/svg%3E">
+            </div>
+
+            <h3>内容懒加载演示</h3>
+            <div class="content-sections">
+                <div data-lazy-content="/api/demo/content1" class="lazy-content">
+                    <p>加载中...</p>
+                </div>
+                <div data-lazy-content="/api/demo/content2" class="lazy-content">
+                    <p>加载中...</p>
+                </div>
+            </div>
+
+            <h3>资源预加载演示</h3>
+            <div class="preload-demo">
+                <button id="trigger-preload">预加载下一页资源</button>
+                <div id="preload-status"></div>
+            </div>
+        </section>
+
+        <section class="performance-monitoring">
+            <h2>性能监控仪表板</h2>
+            <div class="metrics-dashboard">
+                <div class="metric-card">
+                    <h3>缓存命中率</h3>
+                    <div id="cache-hit-rate">--</div>
+                </div>
+                <div class="metric-card">
+                    <h3>平均响应时间</h3>
+                    <div id="avg-response-time">--</div>
+                </div>
+                <div class="metric-card">
+                    <h3>页面加载时间</h3>
+                    <div id="page-load-time">--</div>
+                </div>
+                <div class="metric-card">
+                    <h3>内存使用</h3>
+                    <div id="memory-usage">--</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 性能优化脚本 -->
+    <script type="module">
+        import {
+            initializePerformanceOptimizations,
+            createLazyLoader,
+            createResourcePreloader,
+            createServiceWorkerManager
+        } from '/js/lazyLoader.js';
+
+        // 初始化性能优化
+        const perfOptimizations = initializePerformanceOptimizations({
+            lazyLoading: true,
+            imageOptimization: true,
+            resourcePreloading: true,
+            serviceWorkerCaching: true,
+            customOptions: {
+                lazyLoad: {
+                    rootMargin: '50px',
+                    threshold: 0.1,
+                    fadeIn: true,
+                    retryAttempts: 3
+                },
+                preloadResources: [
+                    '/api/v1/articles',
+                    '/css/components.css',
+                    '/js/components.js'
+                ],
+                swPath: '/sw.js'
+            }
+        });
+
+        // 缓存测试功能
+        document.getElementById('test-cache').addEventListener('click', async () => {
+            const results = document.getElementById('cache-results');
+            results.innerHTML = '<p>测试中...</p>';
+
+            try {
+                const startTime = performance.now();
+
+                // 测试API缓存
+                const response1 = await fetch('/api/v1/articles?limit=5');
+                const firstLoadTime = performance.now() - startTime;
+
+                const startTime2 = performance.now();
+                const response2 = await fetch('/api/v1/articles?limit=5');
+                const secondLoadTime = performance.now() - startTime2;
+
+                const cacheImpact = ((firstLoadTime - secondLoadTime) / firstLoadTime * 100).toFixed(1);
+
+                results.innerHTML = `
+                    <div class="test-results">
+                        <p>首次加载: ${firstLoadTime.toFixed(2)}ms</p>
+                        <p>缓存加载: ${secondLoadTime.toFixed(2)}ms</p>
+                        <p>性能提升: ${cacheImpact}%</p>
+                        <p>缓存状态: ${response2.headers.get('X-Cache') || '未知'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p>测试失败: ${error.message}</p>`;
+            }
+        });
+
+        // 查询优化测试
+        document.getElementById('test-queries').addEventListener('click', async () => {
+            const results = document.getElementById('query-results');
+            results.innerHTML = '<p>测试中...</p>';
+
+            try {
+                const testQueries = [
+                    '/api/v1/articles?search=test',
+                    '/api/v1/articles?tags=tech',
+                    '/api/v1/articles?sort=desc&sortBy=created_at'
+                ];
+
+                const queryResults = [];
+
+                for (const query of testQueries) {
+                    const startTime = performance.now();
+                    await fetch(query);
+                    const duration = performance.now() - startTime;
+                    queryResults.push({ query, duration });
+                }
+
+                const avgDuration = queryResults.reduce((sum, r) => sum + r.duration, 0) / queryResults.length;
+
+                results.innerHTML = `
+                    <div class="query-results">
+                        <p>平均查询时间: ${avgDuration.toFixed(2)}ms</p>
+                        <ul>
+                            ${queryResults.map(r =>
+                                `<li>${r.query}: ${r.duration.toFixed(2)}ms</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p>测试失败: ${error.message}</p>`;
+            }
+        });
+
+        // 预加载演示
+        document.getElementById('trigger-preload').addEventListener('click', () => {
+            const status = document.getElementById('preload-status');
+            status.innerHTML = '<p>预加载中...</p>';
+
+            const preloader = perfOptimizations.preloader;
+            const nextPageResources = [
+                '/css/page2.css',
+                '/js/page2.js',
+                '/api/v1/articles?page=2'
+            ];
+
+            Promise.all(
+                nextPageResources.map(resource =>
+                    preloader.preload(resource).catch(e => console.warn('预加载失败:', resource, e))
+                )
+            ).then(() => {
+                status.innerHTML = '<p style="color: green;">预加载完成！</p>';
+            });
+        });
+
+        // 性能监控仪表板
+        async function updatePerformanceDashboard() {
+            try {
+                const response = await fetch('/api/performance');
+                const data = await response.json();
+                const performance = data.performance;
+
+                document.getElementById('cache-hit-rate').textContent =
+                    `${(performance.cache?.hitRate * 100 || 0).toFixed(1)}%`;
+
+                document.getElementById('avg-response-time').textContent =
+                    `${performance.api?.averageResponseTime?.toFixed(0) || 0}ms`;
+
+                document.getElementById('page-load-time').textContent =
+                    `${window.performance?.timing?.loadEventEnd - window.performance?.timing?.navigationStart || 0}ms`;
+
+                if ('memory' in performance) {
+                    document.getElementById('memory-usage').textContent =
+                        `${(performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1)}MB`;
+                }
+            } catch (error) {
+                console.error('性能监控更新失败:', error);
+            }
+        }
+
+        // 定期更新性能指标
+        updatePerformanceDashboard();
+        setInterval(updatePerformanceDashboard, 30000); // 30秒更新一次
+
+        // 页面加载性能监控
+        window.addEventListener('load', () => {
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            console.log('页面加载时间:', loadTime + 'ms');
+
+            // 发送性能指标到服务器
+            if ('sendBeacon' in navigator) {
+                navigator.sendBeacon('/api/performance/metrics', JSON.stringify({
+                    pageLoadTime: loadTime,
+                    timestamp: Date.now(),
+                    url: window.location.href
+                }));
+            }
+        });
+
+        // Service Worker状态监控
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                console.log('Service Worker已就绪');
+
+                // 监听Service Worker更新
+                registration.addEventListener('updatefound', () => {
+                    console.log('发现Service Worker更新');
+                });
+            });
+        }
+
+        console.log('性能优化演示页面已加载');
+    </script>
+
+    <!-- 非关键JavaScript延迟加载 -->
+    <script>
+        // 延迟加载非关键脚本
+        function loadScript(src) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        // 页面交互后加载额外功能
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                loadScript('/js/analytics.js');
+                loadScript('/js/social-share.js');
+            }, 2000);
+        });
+    </script>
+
+    <style>
+        /* 演示页面样式 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        .performance-showcase, .query-optimization, .lazy-loading, .performance-monitoring {
+            margin: 3rem 0;
+            padding: 2rem;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .lazy-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: opacity 0.3s ease;
+        }
+
+        .content-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .lazy-content {
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+
+        .metrics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .metric-card h3 {
+            margin: 0 0 1rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .metric-card div {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #5a6fd8;
+        }
+
+        .test-results, .query-results {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</body>
+</html>

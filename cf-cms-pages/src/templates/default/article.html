@@ -1,0 +1,306 @@
+{{extends "base"}}
+
+{{! 文章详情页模板 }}
+
+<article class="article-detail" itemscope itemtype="http://schema.org/Article">
+    <!-- 文章头部 -->
+    <header class="article-header">
+        <!-- 分类路径 -->
+        {{#if article.category}}
+        <nav class="article-breadcrumb">
+            <a href="/">首页</a>
+            <span class="separator">/</span>
+            <a href="/categories/{{article.category.slug}}">{{article.category.name}}</a>
+            <span class="separator">/</span>
+            <span class="current">{{article.title}}</span>
+        </nav>
+        {{/if}}
+
+        <!-- 文章标题 -->
+        <h1 class="article-title" itemprop="headline">{{article.title}}</h1>
+
+        <!-- 文章元信息 -->
+        <div class="article-meta">
+            <!-- 作者信息 -->
+            {{#if article.author}}
+            <div class="meta-item author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+                <span class="meta-label">作者:</span>
+                <span class="meta-value" itemprop="name">{{article.author}}</span>
+            </div>
+            {{/if}}
+
+            <!-- 发布时间 -->
+            <div class="meta-item publish-date">
+                <span class="meta-label">发布于:</span>
+                <time datetime="{{article.published_at}}" itemprop="datePublished" class="meta-value">
+                    {{formatDate article.published_at 'YYYY年MM月DD日'}}
+                </time>
+            </div>
+
+            <!-- 更新时间 -->
+            {{#if article.updated_at}}
+            <div class="meta-item update-date">
+                <span class="meta-label">更新于:</span>
+                <time datetime="{{article.updated_at}}" itemprop="dateModified" class="meta-value">
+                    {{formatDate article.updated_at 'YYYY年MM月DD日'}}
+                </time>
+            </div>
+            {{/if}}
+
+            <!-- 阅读统计 -->
+            <div class="meta-item stats">
+                <span class="view-count">{{article.view_count}} 次阅读</span>
+                <span class="read-time">{{readingTime}}</span>
+            </div>
+        </div>
+
+        <!-- 文章标签 -->
+        {{#if article.tags}}
+        <div class="article-tags">
+            {{#each article.tags}}
+            <a href="/tags/{{this.slug}}" class="tag" rel="tag">{{this.name}}</a>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        <!-- 文章封面图 -->
+        {{#if article.cover_image}}
+        <div class="article-featured-image">
+            <img src="{{article.cover_image}}"
+                 alt="{{article.title}}"
+                 itemprop="image"
+                 loading="lazy">
+        </div>
+        {{/if}}
+    </header>
+
+    <!-- 文章目录 -->
+    {{#if toc}}
+    <aside class="article-toc" aria-label="文章目录">
+        <div class="toc-header">
+            <h3>文章目录</h3>
+            <button class="toc-toggle" aria-label="切换目录显示">
+                <span></span>
+            </button>
+        </div>
+        <nav class="toc-nav">
+            <ol class="toc-list">
+                {{#each toc}}
+                <li class="toc-item toc-level-{{this.level}}">
+                    <a href="#{{this.id}}" class="toc-link">{{this.text}}</a>
+                    {{#if this.children}}
+                    <ol class="toc-sublist">
+                        {{#each this.children}}
+                        <li class="toc-item toc-level-{{this.level}}">
+                            <a href="#{{this.id}}" class="toc-link">{{this.text}}</a>
+                        </li>
+                        {{/each}}
+                    </ol>
+                    {{/if}}
+                </li>
+                {{/each}}
+            </ol>
+        </nav>
+    </aside>
+    {{/if}}
+
+    <!-- 文章内容 -->
+    <div class="article-content" itemprop="articleBody">
+        {{{article.content}}}
+    </div>
+
+    <!-- 文章底部 -->
+    <footer class="article-footer">
+        <!-- 版权声明 -->
+        <div class="article-copyright">
+            <p class="copyright-notice">
+                本文由 <strong>{{default article.author site.name}}</strong> 创作，
+                采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">
+                CC BY-NC-SA 4.0
+                </a> 许可协议。
+            </p>
+            <p class="copyright-link">
+                本文链接: <a href="{{url.current}}">{{url.current}}</a>
+            </p>
+        </div>
+
+        <!-- 社交分享 -->
+        <div class="article-share">
+            <h4 class="share-title">分享这篇文章</h4>
+            {{{socialShare 'weibo,wechat,qq,twitter,facebook'}}}
+        </div>
+
+        <!-- 文章导航 -->
+        {{#if navigation}}
+        <nav class="article-navigation">
+            {{#if navigation.prev}}
+            <div class="nav-item nav-prev">
+                <span class="nav-label">上一篇</span>
+                <a href="/articles/{{navigation.prev.slug}}" class="nav-link">
+                    <span class="nav-title">{{navigation.prev.title}}</span>
+                </a>
+            </div>
+            {{/if}}
+
+            {{#if navigation.next}}
+            <div class="nav-item nav-next">
+                <span class="nav-label">下一篇</span>
+                <a href="/articles/{{navigation.next.slug}}" class="nav-link">
+                    <span class="nav-title">{{navigation.next.title}}</span>
+                </a>
+            </div>
+            {{/if}}
+        </nav>
+        {{/if}}
+    </footer>
+</article>
+
+<!-- 相关文章 -->
+{{#if relatedArticles}}
+<section class="related-articles">
+    <h3 class="section-title">相关文章</h3>
+    <div class="related-grid">
+        {{#each relatedArticles}}
+        <article class="related-item">
+            {{#if this.cover_image}}
+            <div class="related-image">
+                <a href="/articles/{{this.slug}}">
+                    <img src="{{this.cover_image}}" alt="{{this.title}}" loading="lazy">
+                </a>
+            </div>
+            {{/if}}
+
+            <div class="related-content">
+                <h4 class="related-title">
+                    <a href="/articles/{{this.slug}}">{{this.title}}</a>
+                </h4>
+                <div class="related-meta">
+                    <time datetime="{{this.published_at}}">
+                        {{formatDate this.published_at 'MM-DD'}}
+                    </time>
+                    <span class="view-count">{{this.view_count}} 阅读</span>
+                </div>
+                {{#if this.summary}}
+                <p class="related-excerpt">{{truncate this.summary 80}}</p>
+                {{/if}}
+            </div>
+        </article>
+        {{/each}}
+    </div>
+</section>
+{{/if}}
+
+<!-- 评论区域 -->
+{{#if site.config.features.enableComments}}
+<section class="comments-section" id="comments">
+    <h3 class="comments-title">评论 <span class="comments-count">({{default commentsCount 0}})</span></h3>
+
+    <!-- 评论表单 -->
+    <form class="comment-form" action="/api/comments" method="post">
+        <input type="hidden" name="article_id" value="{{article.id}}">
+
+        <div class="form-group">
+            <label for="comment-author">姓名 <span class="required">*</span></label>
+            <input type="text" id="comment-author" name="author" required maxlength="50">
+        </div>
+
+        <div class="form-group">
+            <label for="comment-email">邮箱 <span class="required">*</span></label>
+            <input type="email" id="comment-email" name="email" required maxlength="100">
+            <small class="form-note">邮箱不会被公开显示</small>
+        </div>
+
+        <div class="form-group">
+            <label for="comment-website">网站</label>
+            <input type="url" id="comment-website" name="website" maxlength="200">
+        </div>
+
+        <div class="form-group">
+            <label for="comment-content">评论内容 <span class="required">*</span></label>
+            <textarea id="comment-content"
+                      name="content"
+                      required
+                      maxlength="1000"
+                      rows="6"
+                      placeholder="写下你的想法..."></textarea>
+            <div class="form-actions">
+                <small class="form-note">支持 Markdown 语法</small>
+                <button type="submit" class="btn btn-primary">发表评论</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 评论列表 -->
+    <div class="comments-list">
+        {{#if comments}}
+        {{#each comments}}
+        <article class="comment" id="comment-{{this.id}}">
+            <div class="comment-avatar">
+                <img src="{{default this.avatar '/images/default-avatar.png'}}"
+                     alt="{{this.author}}"
+                     loading="lazy">
+            </div>
+
+            <div class="comment-content">
+                <header class="comment-header">
+                    <cite class="comment-author">
+                        {{#if this.website}}
+                        <a href="{{this.website}}" target="_blank" rel="noopener">{{this.author}}</a>
+                        {{else}}
+                        {{this.author}}
+                        {{/if}}
+                    </cite>
+                    <time datetime="{{this.created_at}}" class="comment-date">
+                        {{timeAgo this.created_at}}
+                    </time>
+                </header>
+
+                <div class="comment-body">
+                    {{{markdown this.content}}}
+                </div>
+
+                <footer class="comment-footer">
+                    <button class="comment-reply" data-comment-id="{{this.id}}">回复</button>
+                </footer>
+            </div>
+        </article>
+        {{/each}}
+        {{else}}
+        <div class="no-comments">
+            <p>还没有评论，来发表第一个评论吧！</p>
+        </div>
+        {{/if}}
+    </div>
+</section>
+{{/if}}
+
+<!-- 文章JSON-LD结构化数据 -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{article.title}}",
+    "description": "{{default article.summary article.meta_description}}",
+    "image": "{{article.cover_image}}",
+    "author": {
+        "@type": "Person",
+        "name": "{{default article.author 'Anonymous'}}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "{{site.name}}",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "{{site.config.logo}}"
+        }
+    },
+    "datePublished": "{{article.published_at}}",
+    "dateModified": "{{default article.updated_at article.published_at}}",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{url.current}}"
+    },
+    "wordCount": "{{article.word_count}}",
+    "keywords": [{{#each article.tags}}"{{this.name}}"{{#unless @last}},{{/unless}}{{/each}}]
+}
+</script>

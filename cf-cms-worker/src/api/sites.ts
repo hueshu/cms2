@@ -1,7 +1,10 @@
 import { Hono } from 'hono'
-import { successResponse, paginatedResponse, createdResponse } from '../utils/response'
+import { successResponse, paginatedResponse, createdResponse, noContentResponse } from '../utils/response'
 import { validateBody, validateQuery, siteSchema, paginationSchema } from '../middleware/validation'
+import { DatabaseService, KVService } from '../utils/database'
+import { SiteService } from '../services/siteService'
 import type { Env } from '../index'
+import type { CreateSiteInput, UpdateSiteInput } from '../models/types'
 
 export const sitesRoutes = new Hono<{ Bindings: Env }>()
 
@@ -9,50 +12,59 @@ export const sitesRoutes = new Hono<{ Bindings: Env }>()
 sitesRoutes.get('/', validateQuery(paginationSchema), async (c) => {
   const query = c.get('validatedQuery')
 
-  // TODO: Implement actual database query
-  return paginatedResponse(c, [], 0, query.page, query.limit)
+  const db = new DatabaseService(c.env.DB)
+  const kv = new KVService(c.env.CACHE_KV)
+  const siteService = new SiteService(db, kv)
+
+  const result = await siteService.getSites(query)
+  return paginatedResponse(c, result.data, result.total, result.page, result.limit)
 })
 
 // Create new site
 sitesRoutes.post('/', validateBody(siteSchema), async (c) => {
-  const data = c.get('validatedData')
+  const data = c.get('validatedData') as CreateSiteInput
 
-  // TODO: Implement site creation logic
-  return createdResponse(c, {
-    id: 'new-site-id',
-    ...data,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }, '/api/v1/sites/new-site-id')
+  const db = new DatabaseService(c.env.DB)
+  const kv = new KVService(c.env.CACHE_KV)
+  const siteService = new SiteService(db, kv)
+
+  const site = await siteService.createSite(data)
+  return createdResponse(c, site, `/api/v1/sites/${site.id}`)
 })
 
 // Get site by ID
 sitesRoutes.get('/:siteId', async (c) => {
   const siteId = c.req.param('siteId')
 
-  // TODO: Implement fetch site logic
-  return successResponse(c, {
-    id: siteId,
-    message: 'Site details'
-  })
+  const db = new DatabaseService(c.env.DB)
+  const kv = new KVService(c.env.CACHE_KV)
+  const siteService = new SiteService(db, kv)
+
+  const site = await siteService.getSiteById(siteId)
+  return successResponse(c, site)
 })
 
 // Update site
-sitesRoutes.put('/:siteId', async (c) => {
+sitesRoutes.put('/:siteId', validateBody(siteSchema.partial()), async (c) => {
   const siteId = c.req.param('siteId')
-  const body = await c.req.json()
+  const data = c.get('validatedData') as UpdateSiteInput
 
-  // TODO: Implement update logic
-  return successResponse(c, {
-    id: siteId,
-    message: 'Site updated'
-  })
+  const db = new DatabaseService(c.env.DB)
+  const kv = new KVService(c.env.CACHE_KV)
+  const siteService = new SiteService(db, kv)
+
+  const site = await siteService.updateSite(siteId, data)
+  return successResponse(c, site)
 })
 
 // Delete site
 sitesRoutes.delete('/:siteId', async (c) => {
   const siteId = c.req.param('siteId')
 
-  // TODO: Implement delete logic
-  return c.body(null, 204)
+  const db = new DatabaseService(c.env.DB)
+  const kv = new KVService(c.env.CACHE_KV)
+  const siteService = new SiteService(db, kv)
+
+  await siteService.deleteSite(siteId)
+  return noContentResponse(c)
 })

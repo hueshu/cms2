@@ -1,487 +1,550 @@
 # Multi-Site CMS 多站点内容管理系统
 
-基于Cloudflare全家桶构建的多站点CMS系统，支持管理数十个独立网站，提供SEO优化、内容管理和自动化发布功能。
+![CMS Logo](screenshot.webp)
 
-## 🚀 特性
+基于Cloudflare全家桶构建的现代化多站点CMS系统，支持管理数十个独立网站，提供完整的内容管理、SEO优化、图片生成和自动化发布功能。
 
-- **多站点管理** - 一套系统管理多个独立网站
-- **SEO优化** - 内置完整SEO解决方案
-- **API驱动** - 纯API架构，支持自动化集成
-- **边缘计算** - 基于Cloudflare Workers，全球加速
-- **低成本运营** - 利用Cloudflare免费/低成本服务
+[![构建状态](https://github.com/your-org/cms2/workflows/test/badge.svg)](https://github.com/your-org/cms2/actions)
+[![代码覆盖率](https://codecov.io/gh/your-org/cms2/branch/main/graph/badge.svg)](https://codecov.io/gh/your-org/cms2)
+[![许可证](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![版本](https://img.shields.io/badge/version-1.0.0-green.svg)](package.json)
 
-Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into GitHub issues, and issues into production code – with full traceability at every step.
+## ✨ 核心特性
 
-![Claude Code PM](screenshot.webp)
+### 🏢 多站点管理
+- 一套系统管理数十个独立网站
+- 每个站点独立域名、设置和内容
+- 统一的管理界面，支持批量操作
+- 灵活的权限控制和用户管理
 
-## Table of Contents
+### 📝 智能内容管理
+- 强大的Markdown编辑器，支持实时预览
+- 智能标签系统和内容分类
+- 文章状态管理（草稿、发布、归档）
+- 批量导入导出功能
 
-- [Background](#background)
-- [The Workflow](#the-workflow)
-- [What Makes This Different?](#what-makes-this-different)
-- [Why GitHub Issues?](#why-github-issues)
-- [Core Principle: No Vibe Coding](#core-principle-no-vibe-coding)
-- [System Architecture](#system-architecture)
-- [Workflow Phases](#workflow-phases)
-- [Command Reference](#command-reference)
-- [The Parallel Execution System](#the-parallel-execution-system)
-- [Key Features & Benefits](#key-features--benefits)
-- [Proven Results](#proven-results)
-- [Example Flow](#example-flow)
-- [Get Started Now](#get-started-now)
-- [Local vs Remote](#local-vs-remote)
-- [Technical Notes](#technical-notes)
-- [Support This Project](#support-this-project)
+### 🔍 SEO优化套件
+- 自动生成sitemap.xml和robots.txt
+- 内置SEO分析工具，提供优化建议
+- 结构化数据支持，提升搜索可见性
+- 关键词密度分析和建议
 
-## Background
+### 🖼️ 动态图片生成
+- API驱动的图片生成服务
+- 多种预设模板（社交媒体、博客、缩略图）
+- 自定义样式和品牌元素
+- 自动优化和CDN分发
 
-Every team struggles with the same problems:
-- **Context evaporates** between sessions, forcing constant re-discovery
-- **Parallel work creates conflicts** when multiple developers touch the same code
-- **Requirements drift** as verbal decisions override written specs
-- **Progress becomes invisible** until the very end
+### ⚡ 边缘计算架构
+- 基于Cloudflare Workers，全球加速
+- 毫秒级响应时间
+- 智能缓存策略
+- 99.9%+ 可用性保证
 
-This system solves all of that.
+### 💰 成本效益
+- 利用Cloudflare免费和低成本服务
+- 按需付费，无固定服务器成本
+- 自动扩缩容，处理突发流量
+- 透明的价格结构
 
-## The Workflow
+## 📖 目录
+
+- [快速开始](#-快速开始)
+- [系统架构](#-系统架构)
+- [功能演示](#-功能演示)
+- [安装部署](#-安装部署)
+- [开发指南](#-开发指南)
+- [API文档](#-api文档)
+- [测试](#-测试)
+- [部署](#-部署)
+- [贡献指南](#-贡献指南)
+- [许可证](#-许可证)
+
+## 🚀 快速开始
+
+### 在线演示
+
+🌐 **演示地址**: [https://cms-demo.yourdomain.com](https://cms-demo.yourdomain.com)
+
+- **管理后台**: https://cms-demo.yourdomain.com/admin
+- **API文档**: https://cms-demo.yourdomain.com/docs
+- **示例站点**: https://blog-demo.yourdomain.com
+
+**演示账号**:
+- 用户名: `demo@example.com`
+- 密码: `demo123456`
+
+### 本地快速体验
+
+```bash
+# 克隆项目
+git clone https://github.com/hueshu/cms2.git
+cd cms2
+
+# 安装依赖
+cd cf-cms-worker && npm install
+cd ../cf-cms-site && npm install
+
+# 启动开发环境
+cd cf-cms-worker && npm run dev &
+cd ../cf-cms-site && npm run dev
+
+# 访问管理界面
+open http://localhost:3000/admin
+```
+
+## 🏗 系统架构
+
+### 技术栈
 
 ```mermaid
-graph LR
-    A[PRD Creation] --> B[Epic Planning]
-    B --> C[Task Decomposition]
-    C --> D[GitHub Sync]
-    D --> E[Parallel Execution]
+graph TB
+    subgraph "前端层"
+        A[管理后台<br/>Cloudflare Pages]
+        B[站点前端<br/>静态生成]
+    end
+
+    subgraph "API层"
+        C[Workers API<br/>Hono框架]
+        D[认证中间件<br/>JWT/API Key]
+        E[缓存中间件<br/>智能缓存]
+    end
+
+    subgraph "存储层"
+        F[D1数据库<br/>SQLite]
+        G[KV存储<br/>缓存/会话]
+        H[CDN<br/>静态资源]
+    end
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    C --> H
 ```
 
-### See It In Action (60 seconds)
+### 核心组件
+
+| 组件 | 技术 | 功能 |
+|------|------|------|
+| **API服务** | Cloudflare Workers + Hono | REST API、认证、业务逻辑 |
+| **前端界面** | Cloudflare Pages + Vite | 管理后台、用户界面 |
+| **数据库** | Cloudflare D1 (SQLite) | 结构化数据存储 |
+| **缓存** | Cloudflare KV | 缓存、会话、配置 |
+| **CDN** | Cloudflare CDN | 静态资源分发 |
+| **图片服务** | Workers + Canvas API | 动态图片生成 |
+
+### 部署架构
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   全球用户       │────│   Cloudflare     │────│   源站服务       │
+│                 │    │   Edge Network   │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                              │
+                    ┌─────────┼─────────┐
+                    │         │         │
+            ┌───────▼───┐ ┌───▼───┐ ┌───▼─────┐
+            │ Workers   │ │ Pages │ │ D1 + KV │
+            │ API服务   │ │ 前端  │ │ 数据存储 │
+            └───────────┘ └───────┘ └─────────┘
+```
+
+## 🎬 功能演示
+
+### 站点管理演示
 
 ```bash
-# Create a comprehensive PRD through guided brainstorming
-/pm:prd-new memory-system
-
-# Transform PRD into a technical epic with task breakdown
-/pm:prd-parse memory-system
-
-# Push to GitHub and start parallel execution
-/pm:epic-oneshot memory-system
-/pm:issue-start 1235
+# 创建站点
+curl -X POST https://api.yourdomain.com/api/v1/sites \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "我的博客",
+    "domain": "myblog.com",
+    "description": "个人技术博客",
+    "settings": {
+      "theme": "modern",
+      "seo": {
+        "title": "我的技术博客",
+        "description": "分享编程技术和生活感悟"
+      }
+    }
+  }'
 ```
 
-## What Makes This Different?
-
-| Traditional Development | Claude Code PM System |
-|------------------------|----------------------|
-| Context lost between sessions | **Persistent context** across all work |
-| Serial task execution | **Parallel agents** on independent tasks |
-| "Vibe coding" from memory | **Spec-driven** with full traceability |
-| Progress hidden in branches | **Transparent audit trail** in GitHub |
-| Manual task coordination | **Intelligent prioritization** with `/pm:next` |
-
-## Why GitHub Issues?
-
-Most Claude Code workflows operate in isolation – a single developer working with AI in their local environment. This creates a fundamental problem: **AI-assisted development becomes a silo**.
-
-By using GitHub Issues as our database, we unlock something powerful:
-
-### 🤝 **True Team Collaboration**
-- Multiple Claude instances can work on the same project simultaneously
-- Human developers see AI progress in real-time through issue comments
-- Team members can jump in anywhere – the context is always visible
-- Managers get transparency without interrupting flow
-
-### 🔄 **Seamless Human-AI Handoffs**
-- AI can start a task, human can finish it (or vice versa)
-- Progress updates are visible to everyone, not trapped in chat logs
-- Code reviews happen naturally through PR comments
-- No "what did the AI do?" meetings
-
-### 📈 **Scalable Beyond Solo Work**
-- Add team members without onboarding friction
-- Multiple AI agents working in parallel on different issues
-- Distributed teams stay synchronized automatically
-- Works with existing GitHub workflows and tools
-
-### 🎯 **Single Source of Truth**
-- No separate databases or project management tools
-- Issue state is the project state
-- Comments are the audit trail
-- Labels provide organization
-
-This isn't just a project management system – it's a **collaboration protocol** that lets humans and AI agents work together at scale, using infrastructure your team already trusts.
-
-## Core Principle: No Vibe Coding
-
-> **Every line of code must trace back to a specification.**
-
-We follow a strict 5-phase discipline:
-
-1. **🧠 Brainstorm** - Think deeper than comfortable
-2. **📝 Document** - Write specs that leave nothing to interpretation
-3. **📐 Plan** - Architect with explicit technical decisions
-4. **⚡ Execute** - Build exactly what was specified
-5. **📊 Track** - Maintain transparent progress at every step
-
-No shortcuts. No assumptions. No regrets.
-
-## System Architecture
-
-```
-.claude/
-├── CLAUDE.md          # Always-on instructions (copy content to your project's CLAUDE.md file)
-├── agents/            # Task-oriented agents (for context preservation)
-├── commands/          # Command definitions
-│   ├── context/       # Create, update, and prime context
-│   ├── pm/            # ← Project management commands (this system)
-│   └── testing/       # Prime and execute tests (edit this)
-├── context/           # Project-wide context files
-├── epics/             # ← PM's local workspace (place in .gitignore)
-│   └── [epic-name]/   # Epic and related tasks
-│       ├── epic.md    # Implementation plan
-│       ├── [#].md     # Individual task files
-│       └── updates/   # Work-in-progress updates
-├── prds/              # ← PM's PRD files
-├── rules/             # Place any rule files you'd like to reference here
-└── scripts/           # Place any script files you'd like to use here
-```
-
-## Workflow Phases
-
-### 1. Product Planning Phase
+### 内容发布演示
 
 ```bash
-/pm:prd-new feature-name
+# 发布文章
+curl -X POST https://api.yourdomain.com/api/v1/articles/site-123 \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "我的第一篇文章",
+    "content": "# 欢迎来到我的博客\n\n这是我的第一篇文章...",
+    "status": "published",
+    "tags": ["技术", "博客"],
+    "seo": {
+      "title": "我的第一篇文章 - 技术博客",
+      "description": "这是我在新博客上发布的第一篇文章"
+    }
+  }'
 ```
-Launches comprehensive brainstorming to create a Product Requirements Document capturing vision, user stories, success criteria, and constraints.
 
-**Output:** `.claude/prds/feature-name.md`
-
-### 2. Implementation Planning Phase
+### 图片生成演示
 
 ```bash
-/pm:prd-parse feature-name
+# 生成社交媒体图片
+curl -X POST https://api.yourdomain.com/api/v1/images/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "我的第一篇文章",
+    "template": "social",
+    "width": 1200,
+    "height": 630,
+    "backgroundColor": "#007bff",
+    "fontColor": "#ffffff"
+  }' --output article-cover.png
 ```
-Transforms PRD into a technical implementation plan with architectural decisions, technical approach, and dependency mapping.
 
-**Output:** `.claude/epics/feature-name/epic.md`
+## 📦 安装部署
 
-### 3. Task Decomposition Phase
+### 环境要求
+
+- **Node.js**: 18.0+
+- **npm**: 8.0+
+- **Cloudflare账号**: 免费计划即可开始
+- **域名**: 可选，用于自定义域名
+
+### 1. 克隆项目
 
 ```bash
-/pm:epic-decompose feature-name
+git clone https://github.com/hueshu/cms2.git
+cd cms2
 ```
-Breaks epic into concrete, actionable tasks with acceptance criteria, effort estimates, and parallelization flags.
 
-**Output:** `.claude/epics/feature-name/[task].md`
-
-### 4. GitHub Synchronization
+### 2. 安装依赖
 
 ```bash
-/pm:epic-sync feature-name
-# Or for confident workflows:
-/pm:epic-oneshot feature-name
-```
-Pushes epic and tasks to GitHub as issues with appropriate labels and relationships.
+# 安装Workers依赖
+cd cf-cms-worker
+npm install
 
-### 5. Execution Phase
+# 安装Pages依赖
+cd ../cf-cms-site
+npm install
+
+# 返回根目录
+cd ..
+```
+
+### 3. 配置Cloudflare
 
 ```bash
-/pm:issue-start 1234  # Launch specialized agent
-/pm:issue-sync 1234   # Push progress updates
-/pm:next             # Get next priority task
+# 安装Wrangler CLI
+npm install -g wrangler
+
+# 登录Cloudflare
+wrangler auth login
+
+# 创建D1数据库
+cd cf-cms-worker
+wrangler d1 create cms-production
+
+# 创建KV命名空间
+wrangler kv:namespace create "CACHE_KV"
 ```
-Specialized agents implement tasks while maintaining progress updates and an audit trail.
 
-## Command Reference
+### 4. 配置环境变量
 
-> [!TIP]
-> Type `/pm:help` for a concise command summary
+编辑 `cf-cms-worker/wrangler.toml`:
 
-### Initial Setup
-- `/pm:init` - Install dependencies and configure GitHub
+```toml
+name = "cf-cms-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
 
-### PRD Commands
-- `/pm:prd-new` - Launch brainstorming for new product requirement
-- `/pm:prd-parse` - Convert PRD to implementation epic
-- `/pm:prd-list` - List all PRDs
-- `/pm:prd-edit` - Edit existing PRD
-- `/pm:prd-status` - Show PRD implementation status
+[[d1_databases]]
+binding = "DB"
+database_name = "cms-production"
+database_id = "你的数据库ID"
 
-### Epic Commands
-- `/pm:epic-decompose` - Break epic into task files
-- `/pm:epic-sync` - Push epic and tasks to GitHub
-- `/pm:epic-oneshot` - Decompose and sync in one command
-- `/pm:epic-list` - List all epics
-- `/pm:epic-show` - Display epic and its tasks
-- `/pm:epic-close` - Mark epic as complete
-- `/pm:epic-edit` - Edit epic details
-- `/pm:epic-refresh` - Update epic progress from tasks
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "你的KV命名空间ID"
 
-### Issue Commands
-- `/pm:issue-show` - Display issue and sub-issues
-- `/pm:issue-status` - Check issue status
-- `/pm:issue-start` - Begin work with specialized agent
-- `/pm:issue-sync` - Push updates to GitHub
-- `/pm:issue-close` - Mark issue as complete
-- `/pm:issue-reopen` - Reopen closed issue
-- `/pm:issue-edit` - Edit issue details
+[vars]
+ENVIRONMENT = "production"
+```
 
-### Workflow Commands
-- `/pm:next` - Show next priority issue with epic context
-- `/pm:status` - Overall project dashboard
-- `/pm:standup` - Daily standup report
-- `/pm:blocked` - Show blocked tasks
-- `/pm:in-progress` - List work in progress
-
-### Sync Commands
-- `/pm:sync` - Full bidirectional sync with GitHub
-- `/pm:import` - Import existing GitHub issues
-
-### Maintenance Commands
-- `/pm:validate` - Check system integrity
-- `/pm:clean` - Archive completed work
-- `/pm:search` - Search across all content
-
-## The Parallel Execution System
-
-### Issues Aren't Atomic
-
-Traditional thinking: One issue = One developer = One task
-
-**Reality: One issue = Multiple parallel work streams**
-
-A single "Implement user authentication" issue isn't one task. It's...
-
-- **Agent 1**: Database tables and migrations
-- **Agent 2**: Service layer and business logic
-- **Agent 3**: API endpoints and middleware
-- **Agent 4**: UI components and forms
-- **Agent 5**: Test suites and documentation
-
-All running **simultaneously** in the same worktree.
-
-### The Math of Velocity
-
-**Traditional Approach:**
-- Epic with 3 issues
-- Sequential execution
-
-**This System:**
-- Same epic with 3 issues
-- Each issue splits into ~4 parallel streams
-- **12 agents working simultaneously**
-
-We're not assigning agents to issues. We're **leveraging multiple agents** to ship faster.
-
-### Context Optimization
-
-**Traditional single-thread approach:**
-- Main conversation carries ALL the implementation details
-- Context window fills with database schemas, API code, UI components
-- Eventually hits context limits and loses coherence
-
-**Parallel agent approach:**
-- Main thread stays clean and strategic
-- Each agent handles its own context in isolation
-- Implementation details never pollute the main conversation
-- Main thread maintains oversight without drowning in code
-
-Your main conversation becomes the conductor, not the orchestra.
-
-### GitHub vs Local: Perfect Separation
-
-**What GitHub Sees:**
-- Clean, simple issues
-- Progress updates
-- Completion status
-
-**What Actually Happens Locally:**
-- Issue #1234 explodes into 5 parallel agents
-- Agents coordinate through Git commits
-- Complex orchestration hidden from view
-
-GitHub doesn't need to know HOW the work got done – just that it IS done.
-
-### The Command Flow
+设置密钥:
 
 ```bash
-# Analyze what can be parallelized
-/pm:issue-analyze 1234
+# JWT密钥
+wrangler secret put JWT_SECRET
 
-# Launch the swarm
-/pm:epic-start memory-system
-
-# Watch the magic
-# 12 agents working across 3 issues
-# All in: ../epic-memory-system/
-
-# One clean merge when done
-/pm:epic-merge memory-system
+# Cloudflare API令牌（可选）
+wrangler secret put CLOUDFLARE_API_TOKEN
 ```
 
-## Key Features & Benefits
-
-### 🧠 **Context Preservation**
-Never lose project state again. Each epic maintains its own context, agents read from `.claude/context/`, and updates locally before syncing.
-
-### ⚡ **Parallel Execution**
-Ship faster with multiple agents working simultaneously. Tasks marked `parallel: true` enable conflict-free concurrent development.
-
-### 🔗 **GitHub Native**
-Works with tools your team already uses. Issues are the source of truth, comments provide history, and there is no dependency on the Projects API.
-
-### 🤖 **Agent Specialization**
-Right tool for every job. Different agents for UI, API, and database work. Each reads requirements and posts updates automatically.
-
-### 📊 **Full Traceability**
-Every decision is documented. PRD → Epic → Task → Issue → Code → Commit. Complete audit trail from idea to production.
-
-### 🚀 **Developer Productivity**
-Focus on building, not managing. Intelligent prioritization, automatic context loading, and incremental sync when ready.
-
-## Proven Results
-
-Teams using this system report:
-- **89% less time** lost to context switching – you'll use `/compact` and `/clear` a LOT less
-- **5-8 parallel tasks** vs 1 previously – editing/testing multiple files at the same time
-- **75% reduction** in bug rates – due to the breaking down features into detailed tasks
-- **Up to 3x faster** feature delivery – based on feature size and complexity
-
-## Example Flow
+### 5. 初始化数据库
 
 ```bash
-# Start a new feature
-/pm:prd-new memory-system
-
-# Review and refine the PRD...
-
-# Create implementation plan
-/pm:prd-parse memory-system
-
-# Review the epic...
-
-# Break into tasks and push to GitHub
-/pm:epic-oneshot memory-system
-# Creates issues: #1234 (epic), #1235, #1236 (tasks)
-
-# Start development on a task
-/pm:issue-start 1235
-# Agent begins work, maintains local progress
-
-# Sync progress to GitHub
-/pm:issue-sync 1235
-# Updates posted as issue comments
-
-# Check overall status
-/pm:epic-show memory-system
+# 执行数据库迁移
+wrangler d1 execute cms-production --file=./src/schema.sql
 ```
 
-## Get Started Now
-
-### Quick Setup (2 minutes)
-
-1. **Install this repository into your project**:
-
-   #### Unix/Linux/macOS
-
-   ```bash
-   cd path/to/your/project/
-   curl -sSL https://raw.githubusercontent.com/automazeio/ccpm/main/ccpm.sh | bash
-   # or: wget -qO- https://raw.githubusercontent.com/automazeio/ccpm/main/ccpm.sh | bash
-   ```
-
-   #### Windows (PowerShell)
-   ```bash
-   cd path/to/your/project/
-   iwr -useb https://raw.githubusercontent.com/automazeio/ccpm/main/ccpm.bat | iex
-   ```
-   > ⚠️ **IMPORTANT**: If you already have a `.claude` directory, clone this repository to a different directory and copy the contents of the cloned `.claude` directory to your project's `.claude` directory.
-
-   See full/other installation options in the [installation guide ›](https://github.com/automazeio/ccpm/tree/main/install)
-
-
-2. **Initialize the PM system**:
-   ```bash
-   /pm:init
-   ```
-   This command will:
-   - Install GitHub CLI (if needed)
-   - Authenticate with GitHub
-   - Install [gh-sub-issue extension](https://github.com/yahsan2/gh-sub-issue) for proper parent-child relationships
-   - Create required directories
-   - Update .gitignore
-
-3. **Create `CLAUDE.md`** with your repository information
-   ```bash
-   /init include rules from .claude/CLAUDE.md
-   ```
-   > If you already have a `CLAUDE.md` file, run: `/re-init` to update it with important rules from `.claude/CLAUDE.md`.
-
-4. **Prime the system**:
-   ```bash
-   /context:create
-   ```
-
-
-
-### Start Your First Feature
+### 6. 部署应用
 
 ```bash
-/pm:prd-new your-feature-name
+# 部署Workers
+cd cf-cms-worker
+npm run deploy
+
+# 部署Pages
+cd ../cf-cms-site
+npm run build
+wrangler pages project create cms-frontend
+wrangler pages deploy dist --project-name=cms-frontend
 ```
 
-Watch as structured planning transforms into shipped code.
+详细部署指南请参考 [部署文档](docs/DEPLOYMENT.md)。
 
-## Local vs Remote
+## 🛠 开发指南
 
-| Operation | Local | GitHub |
-|-----------|-------|--------|
-| PRD Creation | ✅ | — |
-| Implementation Planning | ✅ | — |
-| Task Breakdown | ✅ | ✅ (sync) |
-| Execution | ✅ | — |
-| Status Updates | ✅ | ✅ (sync) |
-| Final Deliverables | — | ✅ |
+### 开发环境设置
 
-## Technical Notes
+```bash
+# 启动Workers开发服务器
+cd cf-cms-worker
+npm run dev
 
-### GitHub Integration
-- Uses **gh-sub-issue extension** for proper parent-child relationships
-- Falls back to task lists if extension not installed
-- Epic issues track sub-task completion automatically
-- Labels provide additional organization (`epic:feature`, `task:feature`)
+# 启动Pages开发服务器
+cd cf-cms-site
+npm run dev
+```
 
-### File Naming Convention
-- Tasks start as `001.md`, `002.md` during decomposition
-- After GitHub sync, renamed to `{issue-id}.md` (e.g., `1234.md`)
-- Makes it easy to navigate: issue #1234 = file `1234.md`
+### 项目结构
 
-### Design Decisions
-- Intentionally avoids GitHub Projects API complexity
-- All commands operate on local files first for speed
-- Synchronization with GitHub is explicit and controlled
-- Worktrees provide clean git isolation for parallel work
-- GitHub Projects can be added separately for visualization
+```
+cms2/
+├── cf-cms-worker/          # Workers后端服务
+│   ├── src/
+│   │   ├── api/           # API路由
+│   │   ├── middleware/    # 中间件
+│   │   ├── services/      # 业务服务
+│   │   ├── models/        # 数据模型
+│   │   └── utils/         # 工具函数
+│   ├── wrangler.toml      # Workers配置
+│   └── package.json
+│
+├── cf-cms-site/           # Pages前端
+│   ├── src/
+│   │   ├── components/    # Vue组件
+│   │   ├── pages/         # 页面
+│   │   ├── stores/        # 状态管理
+│   │   └── utils/         # 工具函数
+│   ├── vite.config.ts     # Vite配置
+│   └── package.json
+│
+├── docs/                  # 文档
+│   ├── API.md            # API文档
+│   ├── DEPLOYMENT.md     # 部署指南
+│   ├── USER_GUIDE.md     # 用户指南
+│   └── TROUBLESHOOTING.md # 故障排查
+│
+├── test-suites/          # 测试套件
+│   ├── api-tests.ts      # API测试
+│   └── e2e-tests.ts      # 端到端测试
+│
+└── .github/workflows/    # CI/CD配置
+    └── test.yml          # 测试流程
+```
+
+### 代码规范
+
+- **TypeScript**: 严格类型检查
+- **ESLint**: 代码质量检查
+- **Prettier**: 代码格式化
+- **Vitest**: 单元测试
+- **Conventional Commits**: 提交信息规范
+
+## 📚 API文档
+
+完整的API文档请参考：
+
+- **在线文档**: [docs/API.md](docs/API.md)
+- **Swagger UI**: https://api.yourdomain.com/docs
+- **Postman集合**: [导入链接](https://api.yourdomain.com/postman.json)
+
+### 快速API示例
+
+```javascript
+// 认证
+const response = await fetch('/api/v1/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'password123'
+  })
+})
+
+const { token } = await response.json()
+
+// 获取站点列表
+const sites = await fetch('/api/v1/sites', {
+  headers: { 'Authorization': `Bearer ${token}` }
+})
+
+// 创建文章
+const article = await fetch('/api/v1/articles/site-id', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'your-api-key',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: '文章标题',
+    content: '文章内容...',
+    status: 'published'
+  })
+})
+```
+
+## 🧪 测试
+
+### 运行测试
+
+```bash
+# 单元测试
+cd cf-cms-worker
+npm test
+
+# API集成测试
+npm run test:api
+
+# 端到端测试
+npm run test:e2e
+
+# 性能测试
+npm run test:performance
+
+# 测试覆盖率
+npm run test:coverage
+```
+
+### 测试类型
+
+- **单元测试**: 服务、工具函数、中间件
+- **集成测试**: API端点、数据库操作
+- **端到端测试**: 完整用户流程
+- **性能测试**: 负载和压力测试
+- **安全测试**: 漏洞扫描和安全检查
+
+测试套件详情请查看 [测试文档](test-suites/)。
+
+## 🚀 部署
+
+### 自动部署
+
+项目配置了完整的CI/CD流程：
+
+- **代码推送**: 自动触发测试和部署
+- **Pull Request**: 自动运行测试套件
+- **主分支**: 自动部署到生产环境
+- **开发分支**: 自动部署到测试环境
+
+### 手动部署
+
+```bash
+# 部署到生产环境
+npm run deploy:production
+
+# 部署到测试环境
+npm run deploy:staging
+
+# 仅部署Workers
+npm run deploy:worker
+
+# 仅部署Pages
+npm run deploy:pages
+```
+
+### 环境管理
+
+- **开发环境**: `npm run dev`
+- **测试环境**: https://cms-staging.yourdomain.com
+- **生产环境**: https://cms.yourdomain.com
+
+详细部署说明请参考 [部署指南](docs/DEPLOYMENT.md)。
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！
+
+### 贡献方式
+
+1. **报告问题**: [提交Issue](https://github.com/hueshu/cms2/issues)
+2. **功能建议**: [功能请求](https://github.com/hueshu/cms2/issues/new?template=feature_request.md)
+3. **代码贡献**: [提交Pull Request](https://github.com/hueshu/cms2/pulls)
+4. **文档改进**: 完善文档和示例
+
+### 开发流程
+
+1. Fork项目到您的GitHub账号
+2. 创建功能分支: `git checkout -b feature/amazing-feature`
+3. 提交更改: `git commit -m 'Add amazing feature'`
+4. 推送分支: `git push origin feature/amazing-feature`
+5. 创建Pull Request
+
+### 代码贡献规范
+
+- 遵循现有代码风格
+- 添加适当的测试用例
+- 更新相关文档
+- 确保所有测试通过
+
+## 📄 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。
+
+## 🆘 支持
+
+### 获取帮助
+
+- **文档**: [用户指南](docs/USER_GUIDE.md) | [API文档](docs/API.md)
+- **问题反馈**: [GitHub Issues](https://github.com/hueshu/cms2/issues)
+- **讨论交流**: [GitHub Discussions](https://github.com/hueshu/cms2/discussions)
+- **邮件支持**: support@yourdomain.com
+
+### 社区
+
+- **官方网站**: https://cms.yourdomain.com
+- **博客**: https://blog.yourdomain.com
+- **Twitter**: [@YourProject](https://twitter.com/yourproject)
 
 ---
 
-## Support This Project
+## 📈 项目状态
 
-Claude Code PM was developed at [Automaze](https://automaze.io) **for developers who ship, by developers who ship**.
-
-If Claude Code PM helps your team ship better software:
-
-- ⭐ **[Star this repository](https://github.com/automazeio/ccpm)** to show your support
-- 🐦 **[Follow @aroussi on X](https://x.com/aroussi)** for updates and tips
-
-
----
-
-> [!TIP]
-> **Ship faster with Automaze.** We partner with founders to bring their vision to life, scale their business, and optimize for success.
-> **[Visit Automaze to book a call with me ›](https://automaze.io)**
+- ✅ 多站点管理
+- ✅ 内容管理系统
+- ✅ SEO优化工具
+- ✅ 图片生成服务
+- ✅ API文档
+- ✅ 测试套件
+- 🚧 移动端管理界面
+- 🚧 插件系统
+- 🚧 多语言支持
+- 📋 评论系统
+- 📋 统计分析
 
 ---
 
-## Star History
+**Built with ❤️ by [HueShu](https://github.com/hueshu)**
 
-![Star History Chart](https://api.star-history.com/svg?repos=automazeio/ccpm)
+*如果这个项目对您有帮助，请给我们一个 ⭐️ 支持！*

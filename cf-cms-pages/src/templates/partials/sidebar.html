@@ -1,0 +1,293 @@
+{{! 侧边栏部分模板 }}
+
+<aside class="sidebar" role="complementary">
+    <!-- 作者信息卡片 -->
+    {{#if site.config.author}}
+    <div class="sidebar-widget author-widget">
+        <div class="author-card">
+            {{#if site.config.author.avatar}}
+            <div class="author-avatar">
+                <img src="{{site.config.author.avatar}}" alt="{{site.config.author.name}}" loading="lazy">
+            </div>
+            {{/if}}
+
+            <div class="author-info">
+                <h3 class="author-name">{{site.config.author.name}}</h3>
+                {{#if site.config.author.title}}
+                <p class="author-title">{{site.config.author.title}}</p>
+                {{/if}}
+                {{#if site.config.author.bio}}
+                <p class="author-bio">{{site.config.author.bio}}</p>
+                {{/if}}
+
+                <!-- 社交链接 -->
+                {{#if site.config.author.social}}
+                <div class="author-social">
+                    {{#each site.config.author.social}}
+                    <a href="{{this.url}}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="social-link {{this.platform}}"
+                       aria-label="{{this.platform}}">
+                        {{this.name}}
+                    </a>
+                    {{/each}}
+                </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 搜索框 -->
+    {{#if site.config.features.enableSearch}}
+    <div class="sidebar-widget search-widget">
+        <h3 class="widget-title">搜索</h3>
+        <form class="search-form" action="/search" method="get" role="search">
+            <div class="search-input-group">
+                <input type="search"
+                       name="q"
+                       placeholder="搜索文章..."
+                       aria-label="搜索内容"
+                       autocomplete="off">
+                <button type="submit" class="search-btn" aria-label="执行搜索">
+                    🔍
+                </button>
+            </div>
+        </form>
+    </div>
+    {{/if}}
+
+    <!-- 最新文章 -->
+    {{#if recentArticles}}
+    <div class="sidebar-widget recent-widget">
+        <h3 class="widget-title">最新文章</h3>
+        <ul class="recent-posts">
+            {{#each recentArticles}}
+            <li class="recent-item">
+                <article class="recent-post">
+                    {{#if this.cover_image}}
+                    <div class="recent-thumbnail">
+                        <a href="/articles/{{this.slug}}" aria-label="阅读文章: {{this.title}}">
+                            <img src="{{this.cover_image}}" alt="{{this.title}}" loading="lazy">
+                        </a>
+                    </div>
+                    {{/if}}
+
+                    <div class="recent-content">
+                        <h4 class="recent-title">
+                            <a href="/articles/{{this.slug}}">{{truncate this.title 40}}</a>
+                        </h4>
+                        <div class="recent-meta">
+                            <time datetime="{{this.published_at}}" class="recent-date">
+                                {{formatDate this.published_at 'MM-DD'}}
+                            </time>
+                            <span class="recent-views">{{this.view_count}} 阅读</span>
+                        </div>
+                    </div>
+                </article>
+            </li>
+            {{/each}}
+        </ul>
+        <div class="widget-footer">
+            <a href="/articles" class="view-all-link">查看全部文章 →</a>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 热门文章 -->
+    {{#if popularArticles}}
+    <div class="sidebar-widget popular-widget">
+        <h3 class="widget-title">热门文章</h3>
+        <ol class="popular-posts">
+            {{#each popularArticles}}
+            <li class="popular-item">
+                <article class="popular-post">
+                    <div class="popular-rank">{{@index}}</div>
+                    <div class="popular-content">
+                        <h4 class="popular-title">
+                            <a href="/articles/{{this.slug}}">{{truncate this.title 35}}</a>
+                        </h4>
+                        <div class="popular-stats">
+                            <span class="view-count">{{this.view_count}} 阅读</span>
+                            {{#if this.comment_count}}
+                            <span class="comment-count">{{this.comment_count}} 评论</span>
+                            {{/if}}
+                        </div>
+                    </div>
+                </article>
+            </li>
+            {{/each}}
+        </ol>
+    </div>
+    {{/if}}
+
+    <!-- 标签云 -->
+    {{#if tags}}
+    <div class="sidebar-widget tags-widget">
+        <h3 class="widget-title">标签云</h3>
+        <div class="tag-cloud">
+            {{#each tags}}
+            <a href="/tags/{{this.slug}}"
+               class="tag-link"
+               style="font-size: {{multiply this.weight 0.8 1.5}}em"
+               title="{{this.count}} 篇文章">
+                {{this.name}}
+            </a>
+            {{/each}}
+        </div>
+        <div class="widget-footer">
+            <a href="/tags" class="view-all-link">查看全部标签 →</a>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 分类列表 -->
+    {{#if categories}}
+    <div class="sidebar-widget categories-widget">
+        <h3 class="widget-title">分类目录</h3>
+        <ul class="category-list">
+            {{#each categories}}
+            <li class="category-item">
+                <a href="/categories/{{this.slug}}" class="category-link">
+                    <span class="category-name">{{this.name}}</span>
+                    <span class="category-count">({{this.count}})</span>
+                </a>
+                {{#if this.children}}
+                <ul class="subcategory-list">
+                    {{#each this.children}}
+                    <li class="subcategory-item">
+                        <a href="/categories/{{this.slug}}" class="subcategory-link">
+                            {{this.name}} ({{this.count}})
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+                {{/if}}
+            </li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+
+    <!-- 归档 -->
+    {{#if archives}}
+    <div class="sidebar-widget archive-widget">
+        <h3 class="widget-title">文章归档</h3>
+        <ul class="archive-list">
+            {{#each archives}}
+            <li class="archive-item">
+                <a href="/archives/{{this.year}}/{{this.month}}" class="archive-link">
+                    <span class="archive-date">{{this.year}}年{{this.month}}月</span>
+                    <span class="archive-count">({{this.count}})</span>
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+        <div class="widget-footer">
+            <a href="/archives" class="view-all-link">查看全部归档 →</a>
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 友情链接 -->
+    {{#if site.config.friendLinks}}
+    <div class="sidebar-widget links-widget">
+        <h3 class="widget-title">友情链接</h3>
+        <ul class="friend-links">
+            {{#each site.config.friendLinks}}
+            <li class="link-item">
+                <a href="{{this.url}}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="friend-link"
+                   title="{{this.description}}">
+                    {{#if this.logo}}
+                    <img src="{{this.logo}}" alt="{{this.name}}" class="link-logo">
+                    {{/if}}
+                    <span class="link-name">{{this.name}}</span>
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+
+    <!-- 统计信息 -->
+    {{#if site.stats}}
+    <div class="sidebar-widget stats-widget">
+        <h3 class="widget-title">网站统计</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{site.stats.articleCount}}</div>
+                <div class="stat-label">文章</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{site.stats.tagCount}}</div>
+                <div class="stat-label">标签</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{site.stats.totalViews}}</div>
+                <div class="stat-label">阅读</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{site.stats.commentCount}}</div>
+                <div class="stat-label">评论</div>
+            </div>
+        </div>
+        <div class="stat-note">
+            建站于 {{formatDate site.created_at 'YYYY年MM月'}}，
+            运行 {{daysSince site.created_at}} 天
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 订阅 -->
+    {{#if site.config.rss}}
+    <div class="sidebar-widget subscribe-widget">
+        <h3 class="widget-title">订阅更新</h3>
+        <div class="subscribe-options">
+            <a href="/rss" class="subscribe-link rss" target="_blank">
+                <span class="subscribe-icon">📡</span>
+                <span class="subscribe-text">RSS订阅</span>
+            </a>
+
+            {{#if site.config.newsletter}}
+            <a href="/newsletter" class="subscribe-link newsletter">
+                <span class="subscribe-icon">📧</span>
+                <span class="subscribe-text">邮件订阅</span>
+            </a>
+            {{/if}}
+
+            {{#if site.config.wechat}}
+            <div class="subscribe-link wechat">
+                <span class="subscribe-icon">💬</span>
+                <span class="subscribe-text">微信关注</span>
+                <div class="wechat-qr">
+                    <img src="{{site.config.wechat.qrcode}}" alt="微信二维码">
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 广告位 -->
+    {{#if site.config.ads.sidebar}}
+    <div class="sidebar-widget ad-widget">
+        <div class="ad-container">
+            {{{site.config.ads.sidebar}}}
+        </div>
+    </div>
+    {{/if}}
+
+    <!-- 回到顶部（移动端） -->
+    <div class="sidebar-widget mobile-tools">
+        <button id="mobile-back-to-top" class="tool-btn back-to-top" aria-label="回到顶部">
+            ↑ 顶部
+        </button>
+        <button class="tool-btn theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+            🌓 主题
+        </button>
+    </div>
+</aside>

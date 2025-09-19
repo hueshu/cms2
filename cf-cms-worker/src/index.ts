@@ -8,21 +8,37 @@ import { secureHeaders } from 'hono/secure-headers'
 import { errorHandler, notFoundHandler } from './middleware/error'
 import { ipRateLimiter, rateLimitMiddleware } from './middleware/rateLimit'
 import { authMiddleware, apiKeyMiddleware, optionalAuthMiddleware } from './middleware/auth'
+import { tenantMiddleware, optionalTenantMiddleware } from './middleware/tenant'
+import {
+  cacheMiddleware,
+  apiCacheMiddleware,
+  pageCacheMiddleware,
+  cacheInvalidationMiddleware
+} from './middleware/cache'
 
 // Import route handlers
 import { authRoutes } from './api/auth'
 import { sitesRoutes } from './api/sites'
 import { articlesRoutes } from './api/articles'
 import { tagsRoutes } from './api/tags'
+import { imagesRoutes } from './api/images'
+import { domainsRoutes } from './api/domains'
+import { cdnRoutes } from './api/cdn'
+import { seoRoutes } from './api/seo'
 
 // Import utilities
 import { successResponse } from './utils/response'
+import { PerformanceService } from './services/performanceService'
+import { CacheService } from './services/cacheService'
+import { KVService } from './utils/database'
 
 export interface Env {
   DB: D1Database
   CACHE_KV: KVNamespace
   ENVIRONMENT: string
   JWT_SECRET: string
+  CLOUDFLARE_API_TOKEN?: string
+  CLOUDFLARE_API_EMAIL?: string
 }
 
 const app = new Hono<{ Bindings: Env }>()
@@ -63,6 +79,28 @@ app.get('/api/health', (c) => {
   })
 })
 
+// Performance monitoring endpoint
+app.get('/api/performance', async (c) => {
+  try {
+    const kvService = new KVService(c.env.CACHE_KV)
+    const cacheService = new CacheService(kvService)
+    const performanceService = new PerformanceService(c.env.CACHE_KV)
+
+    const cacheStats = cacheService.getStats()
+    const performanceReport = performanceService.generatePerformanceReport(cacheStats)
+
+    return successResponse(c, {
+      performance: performanceReport,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    return successResponse(c, {
+      error: 'Performance monitoring unavailable',
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
 // API v1 routes
 const api = app.basePath('/api/v1')
 
@@ -73,11 +111,32 @@ api.route('/auth', authRoutes)
 api.use('/sites/*', authMiddleware)
 api.route('/sites', sitesRoutes)
 
-// Protected routes with API key auth
-api.use('/articles/*', apiKeyMiddleware)
+// Protected routes with API key auth - with caching
+api.use('/articles/:siteId/*', apiKeyMiddleware)
+api.use('/articles/:siteId/*', apiCacheMiddleware({ ttl: 300, tags: ['articles'] }))
+api.use('/articles/*', cacheInvalidationMiddleware(['articles']))
 api.route('/articles', articlesRoutes)
 
-api.use('/tags/*', apiKeyMiddleware)
+api.use('/tags/:siteId/*', apiKeyMiddleware)
+api.use('/tags/:siteId/*', tenantMiddleware)
+api.use('/tags/:siteId/*', apiCacheMiddleware({ ttl: 600, tags: ['tags'] }))
+api.use('/tags/*', cacheInvalidationMiddleware(['tags', 'articles']))
 api.route('/tags', tagsRoutes)
+
+// Public image routes (no auth required for basic image generation)
+api.use('/images/*', apiCacheMiddleware({ ttl: 86400, tags: ['images'] })) // 24 hours cache for images
+api.route('/images', imagesRoutes)
+
+// Domain management routes with API key auth
+api.use('/domains/*', apiKeyMiddleware)
+api.route('/domains', domainsRoutes)
+
+// CDN management routes with API key auth
+api.use('/cdn/*', apiKeyMiddleware)
+api.route('/cdn', cdnRoutes)
+
+// SEO management routes with API key auth
+api.use('/seo/*', apiKeyMiddleware)
+api.route('/seo', seoRoutes)
 
 export default app

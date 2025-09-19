@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- 基础SEO标签 -->
+    <title>{{pageTitle}}</title>
+    <meta name="description" content="{{pageDescription}}">
+    <meta name="keywords" content="{{pageKeywords}}">
+    <meta name="author" content="{{site.name}}">
+    <meta name="robots" content="{{default page.robots 'index,follow'}}">
+    <link rel="canonical" href="{{canonicalUrl}}">
+
+    <!-- Open Graph标签 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{pageTitle}}">
+    <meta property="og:description" content="{{pageDescription}}">
+    <meta property="og:url" content="{{url.current}}">
+    <meta property="og:site_name" content="{{site.name}}">
+    {{#if article.cover_image}}
+    <meta property="og:image" content="{{article.cover_image}}">
+    {{/if}}
+
+    <!-- Twitter Card标签 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{pageTitle}}">
+    <meta name="twitter:description" content="{{pageDescription}}">
+    {{#if article.cover_image}}
+    <meta name="twitter:image" content="{{article.cover_image}}">
+    {{/if}}
+
+    <!-- 网站图标 -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <!-- 主题样式 -->
+    {{#each theme.assets.css}}
+    <link rel="stylesheet" href="{{this}}">
+    {{/each}}
+
+    <!-- 自定义CSS -->
+    {{#if site.config.customCss}}
+    <style>
+        {{site.config.customCss}}
+    </style>
+    {{/if}}
+
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- DNS预解析 -->
+    <link rel="dns-prefetch" href="//cdn.example.com">
+
+    <!-- 结构化数据将由模板服务自动插入 -->
+</head>
+<body class="{{default page.type 'default'}}-page">
+    <!-- 页面头部 -->
+    <header class="site-header">
+        <div class="container">
+            <!-- 网站Logo和标题 -->
+            <div class="site-branding">
+                <a href="/" class="site-logo">
+                    {{#if site.config.logo}}
+                    <img src="{{site.config.logo}}" alt="{{site.name}}">
+                    {{else}}
+                    <h1 class="site-title">{{site.name}}</h1>
+                    {{/if}}
+                </a>
+                {{#if site.description}}
+                <p class="site-description">{{site.description}}</p>
+                {{/if}}
+            </div>
+
+            <!-- 主导航 -->
+            <nav class="main-navigation" role="navigation" aria-label="主导航">
+                {{{navigation}}}
+
+                <!-- 搜索框 -->
+                {{#if site.config.features.enableSearch}}
+                <div class="search-box">
+                    <form action="/search" method="get" role="search">
+                        <input type="search" name="q" placeholder="搜索..." aria-label="搜索内容">
+                        <button type="submit" aria-label="执行搜索">🔍</button>
+                    </form>
+                </div>
+                {{/if}}
+            </nav>
+
+            <!-- 移动端菜单按钮 -->
+            <button class="mobile-menu-toggle" aria-label="切换菜单" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    {{#if page.showBreadcrumb}}
+    <nav class="breadcrumb" aria-label="面包屑导航">
+        <div class="container">
+            {{{breadcrumb ' > '}}}
+        </div>
+    </nav>
+    {{/if}}
+
+    <!-- 主内容区域 -->
+    <main id="main-content" class="main-content" role="main">
+        <div class="container">
+            <!-- 内容区块 - 子模板将在此渲染 -->
+            <div class="content-wrapper">
+                {{content}}
+            </div>
+
+            <!-- 侧边栏 -->
+            {{> sidebar}}
+        </div>
+    </main>
+
+    <!-- 页面底部 -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <!-- 底部导航 -->
+            <nav class="footer-navigation">
+                {{> footer-nav}}
+            </nav>
+
+            <!-- 版权信息 -->
+            <div class="site-info">
+                <p>&copy; {{formatDate 'now' 'YYYY'}} {{site.name}}. 保留所有权利.</p>
+                {{#if site.config.icp}}
+                <p class="icp-info">{{site.config.icp}}</p>
+                {{/if}}
+                <p class="powered-by">
+                    Powered by <a href="https://github.com/hueshu/cf-cms" target="_blank">CF-CMS</a>
+                </p>
+            </div>
+
+            <!-- 社交媒体链接 -->
+            {{#if site.config.social}}
+            <div class="social-links">
+                {{#each site.config.social}}
+                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" aria-label="{{this.name}}">
+                    {{this.name}}
+                </a>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" class="back-to-top" aria-label="回到顶部" style="display: none;">
+        ↑
+    </button>
+
+    <!-- 主题脚本 -->
+    {{#each theme.assets.js}}
+    <script src="{{this}}"></script>
+    {{/each}}
+
+    <!-- 自定义JavaScript -->
+    {{#if site.config.customJs}}
+    <script>
+        {{site.config.customJs}}
+    </script>
+    {{/if}}
+
+    <!-- 统计代码 -->
+    {{#if site.config.analytics}}
+    <!-- Google Analytics或其他统计代码 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{site.config.analytics.gaId}}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{site.config.analytics.gaId}}');
+    </script>
+    {{/if}}
+
+    <!-- Service Worker注册 -->
+    {{#if site.config.pwa}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+    {{/if}}
+</body>
+</html>

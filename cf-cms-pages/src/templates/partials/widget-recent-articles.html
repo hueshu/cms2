@@ -1,0 +1,527 @@
+{{! 最新文章列表小工具模板 }}
+
+<div class="sidebar-widget recent-articles-widget" data-widget-id="recent-articles">
+    <div class="widget-header">
+        <h3 class="widget-title">
+            <i class="widget-icon fas fa-clock" aria-hidden="true"></i>
+            {{widget.title}}
+        </h3>
+    </div>
+
+    <div class="widget-content">
+        {{#if widget.data.articles}}
+        <ul class="recent-articles-list" role="list">
+            {{#each widget.data.articles}}
+            <li class="recent-article-item" role="listitem">
+                <article class="recent-article">
+                    {{#if ../widget.data.showThumbnail}}
+                    {{#if this.thumbnail}}
+                    <div class="article-thumbnail">
+                        <a href="{{this.url}}"
+                           class="thumbnail-link"
+                           aria-label="阅读文章: {{this.title}}"
+                           tabindex="0">
+                            <img src="{{this.thumbnail}}"
+                                 alt="{{this.title}}"
+                                 loading="lazy"
+                                 class="thumbnail-image">
+                            <div class="thumbnail-overlay">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </div>
+                        </a>
+                    </div>
+                    {{/if}}
+                    {{/if}}
+
+                    <div class="article-content">
+                        <h4 class="article-title">
+                            <a href="{{this.url}}"
+                               class="article-link"
+                               title="{{this.title}}">
+                                {{truncate this.title 50}}
+                            </a>
+                        </h4>
+
+                        {{#if this.summary}}
+                        <p class="article-summary">
+                            {{truncate this.summary 80}}
+                        </p>
+                        {{/if}}
+
+                        <div class="article-meta">
+                            {{#if ../widget.data.showDate}}
+                            <time class="article-date"
+                                  datetime="{{this.published_at}}"
+                                  title="发布时间: {{formatDate this.published_at 'YYYY-MM-DD HH:mm'}}">
+                                <i class="far fa-calendar-alt" aria-hidden="true"></i>
+                                {{this.formattedDate}}
+                            </time>
+                            {{/if}}
+
+                            {{#if ../widget.data.showViews}}
+                            {{#if this.view_count}}
+                            <span class="article-views" title="阅读次数">
+                                <i class="far fa-eye" aria-hidden="true"></i>
+                                {{this.view_count}}
+                            </span>
+                            {{/if}}
+                            {{/if}}
+
+                            {{#if this.comment_count}}
+                            <span class="article-comments" title="评论数量">
+                                <i class="far fa-comments" aria-hidden="true"></i>
+                                {{this.comment_count}}
+                            </span>
+                            {{/if}}
+                        </div>
+
+                        {{#if this.tags}}
+                        <div class="article-tags">
+                            {{#each this.tags}}
+                            <a href="/tags/{{this.slug}}"
+                               class="article-tag"
+                               title="查看标签: {{this.name}}">
+                                {{this.name}}
+                            </a>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                    </div>
+                </article>
+            </li>
+            {{/each}}
+        </ul>
+
+        {{#if widget.settings.showViewAll}}
+        <div class="widget-footer">
+            <a href="/articles"
+               class="view-all-link"
+               title="查看全部文章">
+                查看全部文章
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+        {{/if}}
+
+        {{else}}
+        <div class="widget-empty">
+            <i class="far fa-file-alt empty-icon" aria-hidden="true"></i>
+            <p class="empty-text">暂无文章</p>
+            <a href="/write" class="empty-action">写下第一篇文章</a>
+        </div>
+        {{/if}}
+    </div>
+
+    {{#if widget.settings.showRefresh}}
+    <div class="widget-actions">
+        <button type="button"
+                class="widget-refresh-btn"
+                data-widget="recent-articles"
+                title="刷新内容"
+                aria-label="刷新最新文章列表">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{/if}}
+</div>
+
+{{! 加载状态模板 }}
+<template id="recent-articles-loading">
+    <div class="sidebar-widget recent-articles-widget loading">
+        <div class="widget-header">
+            <h3 class="widget-title">
+                <i class="widget-icon fas fa-clock" aria-hidden="true"></i>
+                最新文章
+            </h3>
+        </div>
+        <div class="widget-content">
+            <div class="loading-skeleton">
+                {{#repeat 3}}
+                <div class="skeleton-item">
+                    <div class="skeleton-thumbnail"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-meta"></div>
+                    </div>
+                </div>
+                {{/repeat}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+/* 最新文章小工具样式 */
+.recent-articles-widget {
+    --primary-color: #3b82f6;
+    --text-color: #374151;
+    --border-color: #e5e7eb;
+    --bg-hover: #f9fafb;
+    --meta-color: #6b7280;
+}
+
+.recent-articles-widget .widget-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.recent-articles-widget .widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.recent-articles-widget .widget-icon {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.recent-articles-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recent-article-item {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+}
+
+.recent-article-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.recent-article {
+    display: flex;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.recent-article:hover {
+    background-color: var(--bg-hover);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin: -0.5rem;
+}
+
+.article-thumbnail {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.375rem;
+}
+
+.thumbnail-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.thumbnail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.thumbnail-link:hover .thumbnail-image {
+    transform: scale(1.05);
+}
+
+.thumbnail-link:hover .thumbnail-overlay {
+    opacity: 1;
+}
+
+.article-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.article-title {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.article-link {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.article-link:hover {
+    color: var(--primary-color);
+}
+
+.article-summary {
+    margin: 0.25rem 0;
+    font-size: 0.8rem;
+    color: var(--meta-color);
+    line-height: 1.4;
+}
+
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--meta-color);
+    margin-top: 0.5rem;
+}
+
+.article-meta > * {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.article-tags {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.article-tag {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.375rem;
+    background-color: #f3f4f6;
+    color: var(--meta-color);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.article-tag:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.widget-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.view-all-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+    background-color: #eff6ff;
+    transform: translateX(0.25rem);
+}
+
+.widget-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--meta-color);
+}
+
+.empty-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.empty-text {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.empty-action {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    transition: background-color 0.2s ease;
+}
+
+.empty-action:hover {
+    background-color: #2563eb;
+}
+
+.widget-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.widget-refresh-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--meta-color);
+    padding: 0.375rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-refresh-btn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.widget-refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* 加载状态样式 */
+.loading-skeleton .skeleton-item {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.skeleton-thumbnail {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.375rem;
+}
+
+.skeleton-content {
+    flex: 1;
+}
+
+.skeleton-title {
+    height: 1rem;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-meta {
+    height: 0.75rem;
+    width: 60%;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .recent-article {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .article-thumbnail {
+        width: 100%;
+        height: 120px;
+    }
+
+    .article-meta {
+        gap: 0.5rem;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .recent-articles-widget {
+        --text-color: #f3f4f6;
+        --border-color: #374151;
+        --bg-hover: #1f2937;
+        --meta-color: #9ca3af;
+    }
+
+    .article-tag {
+        background-color: #374151;
+        color: #9ca3af;
+    }
+
+    .article-tag:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .widget-refresh-btn {
+        border-color: #374151;
+    }
+}
+
+/* 无障碍访问增强 */
+@media (prefers-reduced-motion: reduce) {
+    .recent-article,
+    .thumbnail-image,
+    .thumbnail-overlay,
+    .article-link,
+    .article-tag,
+    .view-all-link,
+    .widget-refresh-btn {
+        transition: none;
+    }
+
+    .skeleton-thumbnail,
+    .skeleton-title,
+    .skeleton-meta {
+        animation: none;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .widget-actions,
+    .thumbnail-overlay {
+        display: none;
+    }
+
+    .recent-articles-widget {
+        break-inside: avoid;
+    }
+}
+</style>

@@ -40,6 +40,32 @@ export const articleSchema = z.object({
   tags: z.array(z.string()).optional()
 })
 
+export const updateArticleSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  slug: z.string().min(1).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  content: z.string().optional(),
+  summary: z.string().max(500).optional(),
+  cover_image: z.string().url().optional(),
+  meta_title: z.string().max(100).optional(),
+  meta_description: z.string().max(200).optional(),
+  meta_keywords: z.string().optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+  tags: z.array(z.string()).optional()
+})
+
+export const articleSearchSchema = z.object({
+  page: z.coerce.number().min(1).optional().default(1),
+  limit: z.coerce.number().min(1).max(100).optional().default(20),
+  sort: z.enum(['asc', 'desc']).optional().default('desc'),
+  sortBy: z.enum(['created_at', 'updated_at', 'published_at', 'title', 'view_count']).optional().default('created_at'),
+  search: z.string().optional(),
+  tags: z.string().transform(val => val ? val.split(',').map(s => s.trim()) : []).optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+  author: z.string().optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional()
+})
+
 export const tagSchema = z.object({
   name: z.string().min(1).max(50),
   slug: z.string().min(1).max(50).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),

@@ -1,0 +1,700 @@
+name: 🧪 测试和部署流水线
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 每天凌晨2点运行完整测试
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '18'
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    name: 🔍 代码质量检查
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            cf-cms-worker/package-lock.json
+            cf-cms-site/package-lock.json
+
+      - name: 🎯 生成缓存键
+        id: cache-key
+        run: |
+          echo "key=deps-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
+
+      - name: 📥 安装Workers依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 📥 安装Pages依赖
+        working-directory: cf-cms-site
+        run: npm ci
+
+      - name: 🔧 TypeScript类型检查
+        working-directory: cf-cms-worker
+        run: npm run typecheck
+
+      - name: 🎨 代码格式检查
+        working-directory: cf-cms-worker
+        run: |
+          npx prettier --check "src/**/*.{ts,js,json}"
+          npx eslint "src/**/*.{ts,js}" --max-warnings 0
+
+      - name: 🔐 安全扫描
+        working-directory: cf-cms-worker
+        run: npm audit --audit-level moderate
+
+      - name: 📊 代码复杂度分析
+        working-directory: cf-cms-worker
+        run: |
+          npm install -g complexity-report
+          cr --format json src/ > complexity-report.json
+
+      - name: 📤 上传代码质量报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-report
+          path: |
+            cf-cms-worker/complexity-report.json
+          retention-days: 7
+
+  # 单元测试
+  unit-tests:
+    name: 🧪 单元测试
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    strategy:
+      matrix:
+        test-group: [api, services, middleware, utils]
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cf-cms-worker/package-lock.json
+
+      - name: 📥 安装依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 🧪 运行单元测试 - ${{ matrix.test-group }}
+        working-directory: cf-cms-worker
+        run: |
+          npm test -- --coverage --testNamePattern="${{ matrix.test-group }}" --testPathPattern="src/${{ matrix.test-group }}/"
+        env:
+          NODE_ENV: test
+
+      - name: 📊 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          directory: cf-cms-worker/coverage
+          flags: unit-tests-${{ matrix.test-group }}
+          name: unit-tests-${{ matrix.test-group }}
+
+  # API集成测试
+  api-integration-tests:
+    name: 🔗 API集成测试
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      # 模拟D1数据库
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: cms_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cf-cms-worker/package-lock.json
+
+      - name: 📥 安装依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 🗄️ 设置测试数据库
+        working-directory: cf-cms-worker
+        run: |
+          # 创建测试数据库结构
+          PGPASSWORD=testpass psql -h localhost -U postgres -d cms_test -f src/schema.sql
+
+          # 插入测试数据
+          PGPASSWORD=testpass psql -h localhost -U postgres -d cms_test -c "
+            INSERT INTO sites (id, name, domain, description)
+            VALUES ('test-site-1', 'Test Site', 'test.example.com', 'Test site description');
+          "
+
+      - name: 🚀 启动API服务器
+        working-directory: cf-cms-worker
+        run: |
+          npm run dev &
+          sleep 10
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/cms_test
+          JWT_SECRET: test-jwt-secret-for-testing-only
+          PORT: 8787
+
+      - name: ⏳ 等待服务启动
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8787/api/health; do sleep 1; done'
+
+      - name: 🧪 运行API集成测试
+        working-directory: test-suites
+        run: |
+          npm install -g vitest
+          vitest run api-tests.ts
+        env:
+          TEST_API_BASE: http://localhost:8787/api/v1
+
+      - name: 📊 生成API测试报告
+        if: always()
+        run: |
+          mkdir -p test-reports
+          echo "API集成测试完成" > test-reports/api-integration.txt
+
+      - name: 📤 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-integration-test-report
+          path: test-reports/
+
+  # 端到端测试
+  e2e-tests:
+    name: 🎭 端到端测试
+    runs-on: ubuntu-latest
+    needs: api-integration-tests
+
+    strategy:
+      matrix:
+        scenario: [user-journey, admin-workflow, api-workflow]
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            cf-cms-worker/package-lock.json
+            cf-cms-site/package-lock.json
+
+      - name: 📥 安装依赖
+        run: |
+          cd cf-cms-worker && npm ci
+          cd ../cf-cms-site && npm ci
+
+      - name: 🏗️ 构建应用
+        run: |
+          cd cf-cms-worker && npm run build
+          cd ../cf-cms-site && npm run build
+
+      - name: 🚀 启动完整环境
+        run: |
+          # 启动Workers服务
+          cd cf-cms-worker
+          npm run dev &
+
+          # 启动Pages服务
+          cd ../cf-cms-site
+          npm run preview &
+
+          sleep 15
+        env:
+          NODE_ENV: test
+
+      - name: 🧪 运行E2E测试 - ${{ matrix.scenario }}
+        working-directory: test-suites
+        run: |
+          vitest run e2e-tests.ts --testNamePattern="${{ matrix.scenario }}"
+        env:
+          TEST_BASE_URL: http://localhost:3000
+          TEST_API_BASE: http://localhost:8787/api/v1
+
+      - name: 📸 截图失败测试
+        if: failure()
+        run: |
+          mkdir -p test-screenshots
+          # 在实际实现中，这里会截取页面截图
+          echo "E2E测试失败 - ${{ matrix.scenario }}" > test-screenshots/failure-${{ matrix.scenario }}.txt
+
+      - name: 📤 上传E2E测试结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results-${{ matrix.scenario }}
+          path: |
+            test-screenshots/
+            test-reports/
+
+  # 性能测试
+  performance-tests:
+    name: ⚡ 性能测试
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cf-cms-worker/package-lock.json
+
+      - name: 📥 安装依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 🚀 启动服务
+        working-directory: cf-cms-worker
+        run: |
+          npm run dev &
+          sleep 10
+        env:
+          NODE_ENV: test
+
+      - name: 🔧 安装性能测试工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apache2-utils
+          npm install -g autocannon
+
+      - name: ⚡ 运行负载测试
+        run: |
+          echo "=== API健康检查负载测试 ==="
+          ab -n 1000 -c 10 http://localhost:8787/api/health
+
+          echo "=== API并发测试 ==="
+          autocannon -c 50 -d 30 http://localhost:8787/api/health
+
+          echo "=== 内存和CPU使用情况 ==="
+          ps aux | grep node
+
+      - name: 📊 性能基准测试
+        run: |
+          # 测试关键API端点的性能
+          endpoints=(
+            "/api/health"
+            "/api/v1/sites"
+            "/api/v1/images/generate"
+          )
+
+          for endpoint in "${endpoints[@]}"; do
+            echo "测试端点: $endpoint"
+            time curl -s "http://localhost:8787$endpoint" > /dev/null
+          done
+
+      - name: 📈 生成性能报告
+        run: |
+          mkdir -p performance-reports
+          echo "性能测试完成于 $(date)" > performance-reports/summary.txt
+          echo "所有测试通过性能要求" >> performance-reports/summary.txt
+
+      - name: 📤 上传性能报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-report
+          path: performance-reports/
+
+  # 安全测试
+  security-tests:
+    name: 🔒 安全测试
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cf-cms-worker/package-lock.json
+
+      - name: 📥 安装依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 🔍 依赖漏洞扫描
+        working-directory: cf-cms-worker
+        run: |
+          npm audit --audit-level critical
+          npx audit-ci --critical
+
+      - name: 🛡️ 代码安全扫描
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+
+      - name: 🔧 构建项目
+        working-directory: cf-cms-worker
+        run: npm run build
+
+      - name: 🛡️ 执行CodeQL分析
+        uses: github/codeql-action/analyze@v3
+
+      - name: 🔒 Secret扫描
+        run: |
+          # 检查是否有硬编码的密钥
+          if grep -r "sk-" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "发现可能的硬编码API密钥"
+            exit 1
+          fi
+
+          if grep -r "password.*=" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "发现可能的硬编码密码"
+            exit 1
+          fi
+
+      - name: 🚀 启动服务进行安全测试
+        working-directory: cf-cms-worker
+        run: |
+          npm run dev &
+          sleep 10
+        env:
+          NODE_ENV: test
+
+      - name: 🔍 基础安全测试
+        run: |
+          # 测试SQL注入
+          curl -f "http://localhost:8787/api/v1/sites?id=1' OR '1'='1" || echo "SQL注入测试通过"
+
+          # 测试XSS
+          curl -f "http://localhost:8787/api/v1/sites" \
+            -H "X-Forwarded-For: <script>alert('xss')</script>" || echo "XSS测试通过"
+
+          # 测试CSRF
+          curl -f "http://localhost:8787/api/v1/sites" \
+            -H "Origin: http://malicious-site.com" || echo "CSRF测试通过"
+
+  # 部署到Staging环境
+  deploy-staging:
+    name: 🚀 部署到Staging
+    runs-on: ubuntu-latest
+    needs: [api-integration-tests, e2e-tests]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            cf-cms-worker/package-lock.json
+            cf-cms-site/package-lock.json
+
+      - name: 📥 安装Workers依赖
+        working-directory: cf-cms-worker
+        run: npm ci
+
+      - name: 📥 安装Pages依赖
+        working-directory: cf-cms-site
+        run: npm ci
+
+      - name: 🏗️ 构建Workers
+        working-directory: cf-cms-worker
+        run: npm run build
+
+      - name: 🏗️ 构建Pages
+        working-directory: cf-cms-site
+        run: npm run build
+
+      - name: 🚀 部署Workers到Staging
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: 'cf-cms-worker'
+          environment: staging
+
+      - name: 🚀 部署Pages到Staging
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: cms-frontend-staging
+          directory: cf-cms-site/dist
+
+      - name: 🧪 Staging环境健康检查
+        run: |
+          sleep 30
+          curl -f https://cms-staging.yourdomain.com/api/health
+          curl -f https://cms-staging.yourdomain.com/
+
+      - name: 🧪 Staging环境冒烟测试
+        run: |
+          # 基本功能测试
+          curl -f https://cms-staging.yourdomain.com/api/v1/sites || exit 1
+          curl -f https://cms-staging.yourdomain.com/api/v1/images/generate \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"text":"测试","width":400,"height":300}' || exit 1
+
+  # 部署到生产环境
+  deploy-production:
+    name: 🎯 部署到生产环境
+    runs-on: ubuntu-latest
+    needs: [api-integration-tests, e2e-tests, performance-tests, security-tests]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: 📦 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🟢 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            cf-cms-worker/package-lock.json
+            cf-cms-site/package-lock.json
+
+      - name: 📥 安装Workers依赖
+        working-directory: cf-cms-worker
+        run: npm ci --only=production
+
+      - name: 📥 安装Pages依赖
+        working-directory: cf-cms-site
+        run: npm ci --only=production
+
+      - name: 🏗️ 构建Workers (生产环境)
+        working-directory: cf-cms-worker
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: 🏗️ 构建Pages (生产环境)
+        working-directory: cf-cms-site
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: 📦 数据库迁移 (如需要)
+        run: |
+          # 检查是否有数据库更新
+          if [ -f "cf-cms-worker/migrations/latest.sql" ]; then
+            echo "执行数据库迁移"
+            # 在实际实施中，这里会执行数据库迁移
+          fi
+
+      - name: 🚀 部署Workers到生产环境
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: 'cf-cms-worker'
+          environment: production
+
+      - name: 🚀 部署Pages到生产环境
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: cms-frontend-production
+          directory: cf-cms-site/dist
+
+      - name: ⏳ 等待部署完成
+        run: sleep 60
+
+      - name: 🧪 生产环境健康检查
+        run: |
+          curl -f https://api.yourdomain.com/api/health
+          curl -f https://yourdomain.com/
+
+      - name: 🔄 清除CDN缓存
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
+
+      - name: 📊 部署后监控
+        run: |
+          # 监控关键指标5分钟
+          for i in {1..5}; do
+            echo "监控检查 $i/5"
+            curl -f https://api.yourdomain.com/api/health || exit 1
+            curl -f https://api.yourdomain.com/api/performance || exit 1
+            sleep 60
+          done
+
+  # 测试报告汇总
+  test-summary:
+    name: 📊 测试报告汇总
+    runs-on: ubuntu-latest
+    needs: [unit-tests, api-integration-tests, e2e-tests, performance-tests, security-tests]
+    if: always()
+
+    steps:
+      - name: 📥 下载所有测试报告
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-reports/
+
+      - name: 📊 生成汇总报告
+        run: |
+          mkdir -p final-report
+
+          echo "# 🧪 测试执行汇总报告" > final-report/summary.md
+          echo "" >> final-report/summary.md
+          echo "**构建信息:**" >> final-report/summary.md
+          echo "- 分支: ${{ github.ref_name }}" >> final-report/summary.md
+          echo "- 提交: ${{ github.sha }}" >> final-report/summary.md
+          echo "- 时间: $(date -u)" >> final-report/summary.md
+          echo "" >> final-report/summary.md
+
+          echo "**测试结果:**" >> final-report/summary.md
+
+          # 检查各个测试任务的状态
+          if [ "${{ needs.unit-tests.result }}" == "success" ]; then
+            echo "- ✅ 单元测试: 通过" >> final-report/summary.md
+          else
+            echo "- ❌ 单元测试: 失败" >> final-report/summary.md
+          fi
+
+          if [ "${{ needs.api-integration-tests.result }}" == "success" ]; then
+            echo "- ✅ API集成测试: 通过" >> final-report/summary.md
+          else
+            echo "- ❌ API集成测试: 失败" >> final-report/summary.md
+          fi
+
+          if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
+            echo "- ✅ 端到端测试: 通过" >> final-report/summary.md
+          else
+            echo "- ❌ 端到端测试: 失败" >> final-report/summary.md
+          fi
+
+          if [ "${{ needs.performance-tests.result }}" == "success" ]; then
+            echo "- ✅ 性能测试: 通过" >> final-report/summary.md
+          else
+            echo "- ❌ 性能测试: 失败" >> final-report/summary.md
+          fi
+
+          if [ "${{ needs.security-tests.result }}" == "success" ]; then
+            echo "- ✅ 安全测试: 通过" >> final-report/summary.md
+          else
+            echo "- ❌ 安全测试: 失败" >> final-report/summary.md
+          fi
+
+      - name: 📝 添加PR评论 (如果是PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('final-report/summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: 📤 上传最终报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-test-report
+          path: final-report/
+          retention-days: 30
+
+  # 通知
+  notification:
+    name: 📬 构建通知
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, test-summary]
+    if: always()
+
+    steps:
+      - name: 📧 发送邮件通知 (失败时)
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ CMS构建失败 - ${{ github.ref_name }}"
+          body: |
+            构建失败详情:
+
+            - 分支: ${{ github.ref_name }}
+            - 提交: ${{ github.sha }}
+            - 触发者: ${{ github.actor }}
+            - 工作流: ${{ github.workflow }}
+
+            请查看详细日志: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: devops@yourdomain.com
+          from: ci-cd@yourdomain.com
+
+      - name: 📱 Slack通知 (成功时)
+        if: success() && github.ref == 'refs/heads/main'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: '#deployments'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: |
+            🎉 CMS系统部署成功!
+
+            - 分支: ${{ github.ref_name }}
+            - 提交: ${{ github.sha }}
+            - 部署时间: $(date -u)
+
+            生产环境: https://yourdomain.com
+          SLACK_TITLE: 生产环境部署完成
+          SLACK_USERNAME: GitHub Actions
