@@ -16,7 +16,7 @@ CDN服务为CMS系统提供了完整的内容分发网络功能，包括：
 ### 1. 获取CDN配置
 
 ```bash
-curl -X GET "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/config" \
+curl -X GET "https://cf-cms-worker.email777.org/api/v1/cdn/config" \
   -H "X-API-Key: your-api-key"
 ```
 
@@ -24,7 +24,7 @@ curl -X GET "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/config" \
 
 ```bash
 # 清除指定URL
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/purge" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -36,7 +36,7 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
   }'
 
 # 按标签清除
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/purge" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -45,7 +45,7 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
   }'
 
 # 清除所有缓存
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/purge" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -57,7 +57,7 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/purge" \
 ### 3. 预热缓存
 
 ```bash
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/warmup" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/warmup" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -76,7 +76,7 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/warmup" 
 ### 4. 生成响应式图片
 
 ```bash
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/responsive-image" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/responsive-image" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -89,7 +89,7 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/responsi
 ### 5. 生成懒加载HTML
 
 ```bash
-curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/lazy-html" \
+curl -X POST "https://cf-cms-worker.email777.org/api/v1/cdn/lazy-html" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{
@@ -117,14 +117,14 @@ curl -X POST "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/lazy-htm
 ### 6. 获取缓存指标
 
 ```bash
-curl -X GET "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/metrics?timeframe=24h" \
+curl -X GET "https://cf-cms-worker.email777.org/api/v1/cdn/metrics?timeframe=24h" \
   -H "X-API-Key: your-api-key"
 ```
 
 ### 7. 分析URL缓存策略
 
 ```bash
-curl -X GET "https://your-worker.your-subdomain.workers.dev/api/v1/cdn/analyze?url=/static/app.js" \
+curl -X GET "https://cf-cms-worker.email777.org/api/v1/cdn/analyze?url=/static/app.js" \
   -H "X-API-Key: your-api-key"
 ```
 

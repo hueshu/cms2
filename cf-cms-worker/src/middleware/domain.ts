@@ -24,7 +24,7 @@ export const domainMiddleware = async (c: Context, next: Next) => {
     console.log('Request domain:', domain, '(x-forwarded-host:', xForwardedHost, ', host:', hostHeader, ')')
 
     // 如果是Workers默认域名，使用默认站点或跳过
-    if (domain.includes('workers.dev') || domain === 'localhost') {
+    if (domain.includes('workers.dev') || domain.includes('email777.org') || domain === 'localhost') {
       // 可以设置一个默认站点ID
       c.set('currentDomain', domain)
       c.set('isDefaultDomain', true)
@@ -37,7 +37,9 @@ export const domainMiddleware = async (c: Context, next: Next) => {
     const siteService = new SiteService(db, kv)
 
     try {
+      console.log('Looking up site for domain:', domain)
       const site = await siteService.getSiteByDomain(domain)
+      console.log('Found site:', site)
 
       // 将站点信息注入到上下文
       c.set('currentSite', site)
@@ -50,7 +52,7 @@ export const domainMiddleware = async (c: Context, next: Next) => {
 
     } catch (error) {
       // 如果找不到对应的站点，返回404或默认内容
-      console.error('Site not found for domain:', domain, error)
+      console.error('Site not found for domain:', domain, 'Error:', error)
 
       // 或者设置为未找到站点，让路由自己处理
       c.set('currentDomain', domain)

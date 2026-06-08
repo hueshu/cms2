@@ -108,21 +108,60 @@ export class SiteService {
     return site
   }
 
-  // Get site by domain
+  // Get site by domain (supports multiple domains via domains table and cms. prefix)
   async getSiteByDomain(domain: string): Promise<Site> {
-    const site = await this.db.executeOne<Site>(
-      'SELECT * FROM sites WHERE domain = ?',
-      [domain]
+    // Try cache first
+    const cached = await this.kv.get<Site>(`site:domain:${domain}`)
+    if (cached) return cached
+
+    // Remove 'cms.' prefix if present to support both cms.domain.com and domain.com
+    const baseDomain = domain.startsWith('cms.') ? domain.substring(4) : domain
+
+    console.log('getSiteByDomain - domain:', domain, 'baseDomain:', baseDomain)
+
+    // First, try to find the site by checking the domains table
+    const domainRecord = await this.db.executeOne<{ site_id: string }>(
+      'SELECT site_id FROM domains WHERE domain = ? OR domain = ?',
+      [domain, baseDomain]
     )
 
+    console.log('domainRecord from domains table:', domainRecord)
+
+    let site: Site | undefined
+
+    if (domainRecord) {
+      // Found in domains table, get the site
+      site = await this.db.executeOne<Site>(
+        'SELECT * FROM sites WHERE id = ? AND status = ?',
+        [domainRecord.site_id, 'active']
+      )
+      console.log('site from sites table by id:', site)
+    } else {
+      // Fallback to checking sites table domain field for backward compatibility
+      // Try both the full domain and base domain
+      site = await this.db.executeOne<Site>(
+        'SELECT * FROM sites WHERE (domain = ? OR domain = ?) AND status = ?',
+        [domain, baseDomain, 'active']
+      )
+      console.log('site from sites table by domain:', site)
+    }
+
     if (!site) {
+      console.log('Site not found for domain:', domain)
       throw notFoundError('Site with domain', domain)
     }
 
     // Parse JSON config
     if (typeof site.config === 'string') {
-      site.config = JSON.parse(site.config)
+      try {
+        site.config = JSON.parse(site.config)
+      } catch (e) {
+        site.config = {}
+      }
     }
+
+    // Cache for 5 minutes (300 seconds)
+    await this.kv.set(`site:domain:${domain}`, site, { expirationTtl: 300 })
 
     return site
   }
@@ -240,68 +279,6 @@ export class SiteService {
     }
   }
 
-  // Get site by domain (now supports multiple domains via domain_mappings table)
-  async getSiteByDomain(domain: string): Promise<Site> {
-    const cached = await this.kv.get<Site>(`site:domain:${domain}`)
-    if (cached) return cached
-
-    // First check domain_mappings table if it exists
-    try {
-      const mapping = await this.db.executeOne<{ site_id: string }>(
-        'SELECT site_id FROM domain_mappings WHERE domain = ?',
-        [domain]
-      )
-
-      if (mapping) {
-        // Get site by mapped site_id
-        const site = await this.db.executeOne<Site>(
-          'SELECT * FROM sites WHERE id = ? AND status = ?',
-          [mapping.site_id, 'active']
-        )
-
-        if (site) {
-          // Parse JSON config if it's a string
-          if (typeof site.config === 'string') {
-            try {
-              site.config = JSON.parse(site.config)
-            } catch (e) {
-              site.config = {}
-            }
-          }
-
-          // Cache for 5 minutes (300 seconds)
-          await this.kv.set(`site:domain:${domain}`, site, { expirationTtl: 300 })
-          return site
-        }
-      }
-    } catch (error) {
-      // domain_mappings table might not exist yet, continue with fallback
-      console.log('Error querying domain_mappings:', error)
-    }
-
-    // Fallback: check sites table domain field (for backward compatibility)
-    const site = await this.db.executeOne<Site>(
-      'SELECT * FROM sites WHERE domain = ? AND status = ?',
-      [domain, 'active']
-    )
-
-    if (!site) {
-      throw notFoundError('Site', 'domain', domain)
-    }
-
-    // Parse JSON config if it's a string
-    if (typeof site.config === 'string') {
-      try {
-        site.config = JSON.parse(site.config)
-      } catch (e) {
-        site.config = {}
-      }
-    }
-
-    // Cache for 5 minutes
-    await this.kv.set(`site:domain:${domain}`, site, { expirationTtl: 300 })
-    return site
-  }
 
   // Add domain mapping for a site
   async addDomainMapping(siteId: string, domain: string, isPrimary: boolean = false): Promise<void> {

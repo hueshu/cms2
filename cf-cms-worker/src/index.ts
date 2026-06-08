@@ -39,6 +39,7 @@ import { KVService } from './utils/database'
 export interface Env {
   DB: D1Database
   CACHE_KV: KVNamespace
+  IMAGES_BUCKET: R2Bucket
   ENVIRONMENT: string
   JWT_SECRET: string
   CLOUDFLARE_API_TOKEN?: string
@@ -65,7 +66,90 @@ app.use('*', ipRateLimiter)
 // Domain identification middleware - run before other middleware
 app.use('*', domainMiddleware)
 
-// Static assets
+// Static assets - handle WeChat QR code
+app.get('/images/wechat-qr.png', async (c) => {
+  try {
+    const object = await c.env.IMAGES_BUCKET.get('wechat-qr.png')
+    if (object === null) {
+      return c.notFound()
+    }
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('Cache-Control', 'public, max-age=31536000')
+    headers.set('Content-Type', 'image/png')
+
+    return c.body(object.body, 200, headers)
+  } catch (error) {
+    console.error('Error fetching WeChat QR from R2:', error)
+    return c.notFound()
+  }
+})
+
+// Static assets - handle images from R2 storage
+app.get('/images/allcut-cases/:filename', async (c) => {
+  const filename = c.req.param('filename')
+  const objectKey = `allcut-cases/${filename}`
+
+  try {
+    // Get the object from R2
+    const object = await c.env.IMAGES_BUCKET.get(objectKey)
+
+    if (object === null) {
+      return c.notFound()
+    }
+
+    // Get the object body as a stream
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('Cache-Control', 'public, max-age=31536000')
+
+    // Set correct content type based on file extension
+    if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      headers.set('Content-Type', 'image/jpeg')
+    } else if (filename.endsWith('.png')) {
+      headers.set('Content-Type', 'image/png')
+    } else if (filename.endsWith('.webp')) {
+      headers.set('Content-Type', 'image/webp')
+    }
+
+    return c.body(object.body, 200, headers)
+  } catch (error) {
+    console.error('Error fetching image from R2:', error)
+    return c.notFound()
+  }
+})
+
+// Static assets - handle Wanjian images from R2 storage
+app.get('/images/wanjian/:filename', async (c) => {
+  const filename = c.req.param('filename')
+  const objectKey = `wanjian/${filename}`
+
+  try {
+    const object = await c.env.IMAGES_BUCKET.get(objectKey)
+
+    if (object === null) {
+      return c.notFound()
+    }
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('Cache-Control', 'public, max-age=31536000')
+
+    if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      headers.set('Content-Type', 'image/jpeg')
+    } else if (filename.endsWith('.png')) {
+      headers.set('Content-Type', 'image/png')
+    }
+
+    return c.body(object.body, 200, headers)
+  } catch (error) {
+    console.error('Error fetching Wanjian image from R2:', error)
+    return c.notFound()
+  }
+})
+
+// Other static routes
 app.route('/', staticRoutes)
 
 // Frontend routes for specific sites (must be before API routes)

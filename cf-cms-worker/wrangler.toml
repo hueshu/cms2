@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Custom domain configuration
+routes = [
+  { pattern = "cf-cms-worker.email777.org", custom_domain = true }
+]
+
 [vars]
 ENVIRONMENT = "development"
 # CLOUDFLARE_API_TOKEN = "your-cloudflare-api-token"
@@ -20,6 +25,10 @@ id = "eb19192119174b29b9b0ce4892673124"
 binding = "DB"
 database_name = "cms-database"
 database_id = "1bda5adc-168b-49c8-a8ce-4cc751616d60"
+
+[[r2_buckets]]
+binding = "IMAGES_BUCKET"
+bucket_name = "cms-images"
 
 [env.production]
 vars = { ENVIRONMENT = "production" }
