@@ -1,6 +1,7 @@
 import { DatabaseService, KVService } from '../utils/database'
 import { ArticleService } from '../services/articleService'
 import { getICPInfo } from '../config/icp'
+import { renderChangelogPage } from './changelog'
 
 /**
  * Xiniu Jianji (犀牛剪辑) site renderer
@@ -447,6 +448,7 @@ export async function renderXiniuHomepage(c: any, site: any) {
                 <li><a href="/download">下载软件</a></li>
                 <li><a href="/affiliate">推广赚钱</a></li>
                 <li><a href="/matrix-publish">矩阵群发</a></li>
+                <li><a href="/changelog">更新日志</a></li>
             </ul>
             <a href="/download" class="nav-cta">立即下载</a>
         </div>
@@ -1355,6 +1357,13 @@ export async function renderXiniuAffiliatePage(c: any, site: any) {
     btnText: '前往推广赚钱',
     siteName: '犀牛剪辑(ALLCUT)',
   }))
+}
+
+/**
+ * Render software changelog page (犀牛剪辑 theme)
+ */
+export async function renderXiniuChangelogPage(c: any, site: any) {
+  return renderChangelogPage(c, site, { brand: '🦏 犀牛剪辑', primary: '#6366f1', secondary: '#8b5cf6' })
 }
 
 /**

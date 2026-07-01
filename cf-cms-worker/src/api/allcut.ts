@@ -1,6 +1,7 @@
 import { DatabaseService, KVService } from '../utils/database'
 import { ArticleService } from '../services/articleService'
 import { getICPInfo } from '../config/icp'
+import { renderChangelogPage } from './changelog'
 
 /**
  * ALLCUT site renderer - 完全按照 https://allcut.cn/ 的内容
@@ -890,6 +891,7 @@ export async function renderAllcutHomepage(c: any, site: any) {
                 <li><a href="/learn-more">了解更多</a></li>
                 <li><a href="https://sales.allcut.cn/aff/" target="_blank" rel="noopener">推广赚钱</a></li>
                 <li><a href="/matrix-publish">矩阵群发</a></li>
+                <li><a href="/changelog">更新日志</a></li>
             </ul>
         </div>
     </nav>
@@ -1755,6 +1757,13 @@ export async function renderAllcutDownloadPage(c: any, site: any) {
 </body>
 </html>`
   return c.html(html)
+}
+
+/**
+ * 渲染软件更新日志页 (ALLCUT 配色)
+ */
+export async function renderAllcutChangelogPage(c: any, site: any) {
+  return renderChangelogPage(c, site, { brand: 'ALLCUT', primary: '#667eea', secondary: '#764ba2' })
 }
 
 /**

@@ -4,13 +4,14 @@ import type { Env } from '../index'
 import { DatabaseService, KVService } from '../utils/database'
 import { ArticleService } from '../services/articleService'
 import { renderBwg87Homepage } from './bwg87'
-import { renderXiniuHomepage, renderXiniuPricePage, renderXiniuDownloadPage, renderXiniuTutorialPage, renderXiniuAffiliatePage } from './xiniu'
+import { renderXiniuHomepage, renderXiniuPricePage, renderXiniuDownloadPage, renderXiniuTutorialPage, renderXiniuAffiliatePage, renderXiniuChangelogPage } from './xiniu'
 import { renderHostwindsHomepage } from './hostwinds'
 import {
   renderAllcutHomepage,
   renderAllcutPricePage,
   renderAllcutDownloadPage,
-  renderAllcutLearnMorePage
+  renderAllcutLearnMorePage,
+  renderAllcutChangelogPage
 } from './allcut'
 import { renderWanjianHomepage } from './wanjian'
 import { renderVultrHomepage } from './vultr'
@@ -132,6 +133,21 @@ unifiedFrontendRoutes.get('/affiliate', async (c) => {
   switch (site.id) {
     case 'site-001':
       return renderXiniuAffiliatePage(c, site)
+    default:
+      return c.notFound()
+  }
+})
+
+// 软件更新日志页(犀牛剪辑 / ALLCUT)
+unifiedFrontendRoutes.get('/changelog', async (c) => {
+  const site = getCurrentSite(c)
+  if (!site) return c.notFound()
+
+  switch (site.id) {
+    case 'site-001':
+      return renderXiniuChangelogPage(c, site)
+    case 'site-004':
+      return renderAllcutChangelogPage(c, site)
     default:
       return c.notFound()
   }
@@ -476,6 +492,7 @@ unifiedFrontendRoutes.get('/sitemap.xml', async (c) => {
     { loc: `${baseUrl}/articles`, priority: '0.8', changefreq: 'daily' },
     { loc: `${baseUrl}/download`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${baseUrl}/price`, priority: '0.7', changefreq: 'monthly' },
+    { loc: `${baseUrl}/changelog`, priority: '0.6', changefreq: 'weekly' },
   ]
 
   // Get all published articles
